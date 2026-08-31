@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/heebiejeeebies/Incremental#readme",
   "engines": {
-    "node": ">=26.0.0"
+    "node": "24.x"
   },
   "devDependencies": {
     "typescript": "^7.0.2",
