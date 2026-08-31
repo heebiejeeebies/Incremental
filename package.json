@@ -1,10 +1,12 @@
 {
   "name": "incremental",
   "version": "1.0.0",
-  "description": "```bash npm install npm start ```",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -17,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/heebiejeeebies/Incremental/issues"
   },
-  "homepage": "https://github.com/heebiejeeebies/Incremental#readme"
+  "homepage": "https://github.com/heebiejeeebies/Incremental#readme",
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
 }
