@@ -1,19 +1,32 @@
+import { countUp, checkExtinctions } from "./tick";
+
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
 const SAVE_KEY = 'incremental-save';
 const skib_COST = 5;
+const TICK_INTERVAL_MS = 1000;
 
-interface GameState {
+export enum Extinction {
+  ALIVE, // 0
+  CHOP_TREE, // 1
+  ASTEROID, // 2
+  LASERED // 3
+}
+
+export interface GameState {
   currency: number;
   tree: {
     lifepoints: number;
   };
+  tickCounter: number;
+  tickRate: number;
+  extinction: Extinction
 }
 
 function loadState(): GameState {
   const raw = localStorage.getItem(SAVE_KEY);
   if (!raw) {
-    return { currency: 0, tree: { lifepoints: 0 } };
+    return { currency: 0, tree: { lifepoints: 0 }, tickCounter: 0, tickRate: 1, extinction: Extinction.ALIVE };
   }
   return JSON.parse(raw) as GameState;
 }
@@ -51,3 +64,10 @@ function render() {
 }
 
 render();
+
+setInterval(() => {
+  countUp(state);
+  checkExtinctions(state);
+  saveState(state);
+  render();
+}, TICK_INTERVAL_MS);
