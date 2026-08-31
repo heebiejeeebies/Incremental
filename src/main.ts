@@ -1,9 +1,7 @@
 import { countUp, checkExtinctions } from "./tick";
-
-const app = document.querySelector<HTMLDivElement>('#app')!;
+import { render } from "../FrontEnd/FrontEnd.js";
 
 const SAVE_KEY = 'incremental-save';
-const skib_COST = 5;
 const TICK_INTERVAL_MS = 1000;
 
 export enum Extinction {
@@ -50,35 +48,15 @@ function saveState(state: GameState) {
 
 const state = loadState();
 
-function render() {
-  app.innerHTML = `
-    <h1>Incremental</h1>
-    <p>lifepoints: <span id="count">${state.lifepoints}</span></p>
-    <button id="gather">Gather</button>
-    <button id="skib" ${state.lifepoints < skib_COST ? 'disabled' : ''}>
-      Skib Tree (${skib_COST} lifepoints)
-    </button>
-  `;
-
-  document.querySelector<HTMLButtonElement>('#gather')!.addEventListener('click', () => {
-    state.lifepoints++;
-    saveState(state);
-    render();
-  });
-
-  document.querySelector<HTMLButtonElement>('#skib')!.addEventListener('click', () => {
-    if (state.lifepoints < skib_COST) return;
-    state.lifepoints -= skib_COST;
-    saveState(state);
-    render();
-  });
+function update() {
+  saveState(state);
+  render(state, update);
 }
 
-render();
+update();
 
 setInterval(() => {
   countUp(state);
   checkExtinctions(state);
-  saveState(state);
-  render();
+  update();
 }, TICK_INTERVAL_MS);
