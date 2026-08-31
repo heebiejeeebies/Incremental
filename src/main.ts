@@ -14,19 +14,32 @@ export enum Extinction {
 }
 
 export interface GameState {
-  currency: number;
-  tree: {
-    lifepoints: number;
-  };
+  lifepoints: number;
+  clickValue: number;
+  upgrades: Upgrades;
   tickCounter: number;
   tickRate: number;
-  extinction: Extinction
+  extinction: Extinction;
+}
+
+export interface Upgrades {
+  clickIncrease: number,
+  // add other upgrades which could be objects that contain other special fields
+  
 }
 
 function loadState(): GameState {
   const raw = localStorage.getItem(SAVE_KEY);
   if (!raw) {
-    return { currency: 0, tree: { lifepoints: 0 }, tickCounter: 0, tickRate: 1, extinction: Extinction.ALIVE };
+    return { lifepoints: 0, 
+      clickValue: 1,
+      upgrades: {
+        clickIncrease: 0,
+        // add more upgrades
+      },
+      tickCounter: 0, 
+      tickRate: 1, 
+      extinction: Extinction.ALIVE };
   }
   return JSON.parse(raw) as GameState;
 }
@@ -40,24 +53,22 @@ const state = loadState();
 function render() {
   app.innerHTML = `
     <h1>Incremental</h1>
-    <p>currency: <span id="count">${state.currency}</span></p>
-    <p>Tree lifepoints: <span id="lifepoints">${state.tree.lifepoints}</span></p>
+    <p>lifepoints: <span id="count">${state.lifepoints}</span></p>
     <button id="gather">Gather</button>
-    <button id="skib" ${state.currency < skib_COST ? 'disabled' : ''}>
-      Skib Tree (${skib_COST} currency)
+    <button id="skib" ${state.lifepoints < skib_COST ? 'disabled' : ''}>
+      Skib Tree (${skib_COST} lifepoints)
     </button>
   `;
 
   document.querySelector<HTMLButtonElement>('#gather')!.addEventListener('click', () => {
-    state.currency++;
+    state.lifepoints++;
     saveState(state);
     render();
   });
 
   document.querySelector<HTMLButtonElement>('#skib')!.addEventListener('click', () => {
-    if (state.currency < skib_COST) return;
-    state.currency -= skib_COST;
-    state.tree.lifepoints++;
+    if (state.lifepoints < skib_COST) return;
+    state.lifepoints -= skib_COST;
     saveState(state);
     render();
   });

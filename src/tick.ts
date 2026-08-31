@@ -1,4 +1,4 @@
-import { GameState, Extinction } from "./main.js"
+import { GameState, Extinction } from "./main"
 
 // time moving
 export function countUp(state: GameState) {
@@ -15,7 +15,7 @@ function resetTick(state: GameState) {
 export function checkExtinctions(state: GameState) {
   // 1. flip the state to appropriate death if needed
   // conditions NOT FINISHED 
-  
+
   // 2. play animation of doom and despair
   if (state.extinction === Extinction.ALIVE) {
     return;
