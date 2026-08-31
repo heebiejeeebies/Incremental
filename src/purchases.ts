@@ -1,4 +1,4 @@
-import { GameState } from "./main";
+// import { GameState } from "./main";
 
 // function buyClickIncrease(state: GameState) {
 //   if (state.lifepoints)
