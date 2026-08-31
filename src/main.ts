@@ -30,7 +30,7 @@ function render() {
     <p>currency: <span id="count">${state.currency}</span></p>
     <p>Tree lifepoints: <span id="lifepoints">${state.tree.lifepoints}</span></p>
     <button id="gather">Gather</button>
-    <button id="currency" ${state.currency < skib_COST ? 'disabled' : ''}>
+    <button id="skib" ${state.currency < skib_COST ? 'disabled' : ''}>
       Skib Tree (${skib_COST} currency)
     </button>
   `;
