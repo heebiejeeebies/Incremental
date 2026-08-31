@@ -30,3 +30,9 @@ dist-ssr
 
 # Coverage
 coverage
+
+# Vercel
+.vercel
+
+.vercel
+.env*
