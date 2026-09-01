@@ -11,10 +11,17 @@ export enum Extinction {
   LASERED // 3
 }
 
+export interface Leaf {
+  x: number; // coords
+  y: number; 
+  rotation: number; // rotation
+}
+
 export interface GameState {
   lifepoints: number;
   clickValue: number;
   upgrades: Upgrades;
+  leaves: Leaf[];
   tickCounter: number;
   tickRate: number;
   extinction: Extinction;
@@ -34,6 +41,7 @@ function defaultState(): GameState {
       clickIncrease: 0,
       // add more upgrades
     },
+    leaves: [],
     tickCounter: 0,
     tickRate: 1,
     extinction: Extinction.ALIVE,

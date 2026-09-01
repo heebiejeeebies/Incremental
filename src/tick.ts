@@ -4,6 +4,11 @@ import { GameState, Extinction } from "./main"
 export function countUp(state: GameState) {
   if (!state) return;
   state.tickCounter = (state.tickCounter + state.tickRate) % 500;
+
+  // every 2 seconds add a point for each 5 leaves
+  if (state.tickCounter % 2 === 0) {
+    state.lifepoints += (state.leaves.length / 5);
+  }
 }
 
 // if tree dies, reset time
