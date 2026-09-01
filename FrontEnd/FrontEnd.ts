@@ -1,4 +1,5 @@
 import type { GameState } from '../src/main.js';
+import {clickTree} from '../src/tree.js'
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -10,7 +11,7 @@ export function render(state: GameState, onChange: () => void): void {
   `;
 
   document.querySelector<HTMLButtonElement>('#tree')!.addEventListener('click', () => {
-    state.lifepoints++;
+    clickTree(state);
     onChange();
   });
 }

@@ -26,20 +26,27 @@ export interface Upgrades {
   
 }
 
+function defaultState(): GameState {
+  return {
+    lifepoints: 0,
+    clickValue: 1,
+    upgrades: {
+      clickIncrease: 0,
+      // add more upgrades
+    },
+    tickCounter: 0,
+    tickRate: 1,
+    extinction: Extinction.ALIVE,
+  };
+}
+
 function loadState(): GameState {
   const raw = localStorage.getItem(SAVE_KEY);
   if (!raw) {
-    return { lifepoints: 0, 
-      clickValue: 1,
-      upgrades: {
-        clickIncrease: 0,
-        // add more upgrades
-      },
-      tickCounter: 0, 
-      tickRate: 1, 
-      extinction: Extinction.ALIVE };
+    return defaultState();
   }
-  return JSON.parse(raw) as GameState;
+  // ensures nothings null. prolly works
+  return { ...defaultState(), ...JSON.parse(raw) } as GameState;
 }
 
 function saveState(state: GameState) {
