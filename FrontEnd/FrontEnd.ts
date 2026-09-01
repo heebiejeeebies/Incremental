@@ -1,7 +1,7 @@
 import type { GameState } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
 import { buyLeaf, clearLeaves, LEAF_COST } from '../src/purchases.js'
-import dino_background from './assets/dinobackground.png'
+import dino_background from './assets/background.png'
 import tree_image from './assets/treewow.png'
 import bevis from './assets/bevis.png'
 import leaf_image from './assets/leaf.png'
