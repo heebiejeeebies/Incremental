@@ -7,7 +7,7 @@ export enum MeteorPhase {
 export const SIZE_FOR_BOOM = 60;
 
 const FLY_DURATION_TICKS = 3; 
-const EXPLODE_DURATION_TICKS = 1;
+const EXPLODE_DURATION_TICKS = 2; // must match the game reset firing a beat after the explosion is visible
 
 let size = 1;
 let burnedness = 0;
