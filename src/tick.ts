@@ -1,4 +1,5 @@
-import { GameState, Extinction } from "./main"
+import { GameState, Extinction, defaultState } from "./main"
+import { tickMeteor } from "./meteor"
 
 // time moving
 export function countUp(state: GameState) {
@@ -8,6 +9,10 @@ export function countUp(state: GameState) {
   // every 2 seconds add a point for each 5 leaves
   if (state.tickCounter % 2 === 0) {
     state.lifepoints += (state.leaves.length / 5);
+  }
+
+  if (tickMeteor()) {
+    state.extinction = Extinction.ASTEROID;
   }
 }
 
@@ -19,7 +24,7 @@ function resetTick(state: GameState) {
 
 export function checkExtinctions(state: GameState) {
   // 1. flip the state to appropriate death if needed
-  // conditions NOT FINISHED 
+  // conditions NOT FINISHED
 
   // 2. play animation of doom and despair
   if (state.extinction === Extinction.ALIVE) {
@@ -27,11 +32,20 @@ export function checkExtinctions(state: GameState) {
   } else if (state.extinction === Extinction.CHOP_TREE) {
     // play animation
     resetTick(state);
+    timeLoopState(state);
   } else if (state.extinction === Extinction.ASTEROID) {
     // play animation
     resetTick(state);
+    timeLoopState(state);
   } else if (state.extinction === Extinction.LASERED) {
     // play animation
     resetTick(state);
+    timeLoopState(state);
   }
+}
+
+function timeLoopState(state: GameState) {
+  const newloops = state.loops + 1;
+  Object.assign(state, defaultState());
+  state.loops = newloops;
 }

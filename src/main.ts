@@ -18,6 +18,7 @@ export interface Leaf {
 }
 
 export interface GameState {
+  loops: number;
   lifepoints: number;
   clickValue: number;
   upgrades: Upgrades;
@@ -33,8 +34,9 @@ export interface Upgrades {
   
 }
 
-function defaultState(): GameState {
+export function defaultState(): GameState {
   return {
+    loops: 0,
     lifepoints: 0,
     clickValue: 1,
     upgrades: {
