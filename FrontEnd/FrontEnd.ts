@@ -12,10 +12,16 @@ import explosion_image from './assets/explosion.png'
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
-document.body.style.backgroundImage = `url(${dino_background})`;
-document.body.style.backgroundSize = 'cover';
-document.body.style.backgroundPosition = 'center';
-document.body.style.backgroundRepeat = 'no-repeat';
+const WORLD_WIDTH = 3000;
+const WORLD_HEIGHT = 2000;
+
+const HUD_HEIGHT_ESTIMATE = 180;
+const TREE_POSITION = {
+  x: window.innerWidth / 2 + 125,
+  y: HUD_HEIGHT_ESTIMATE + (window.innerHeight - HUD_HEIGHT_ESTIMATE) / 2,
+};
+const METEOR_START_POSITION = { x: 400, y: 300 };
+const BEVIS_POSITION = { x: 500, y: 500 };
 
 function renderLeaves(state: GameState): string {
   return state.leaves
@@ -26,11 +32,6 @@ function renderLeaves(state: GameState): string {
     .join('');
 }
 
-// The meteor is a persistent DOM element created once, outside app.innerHTML's
-// render cycle. A full innerHTML rebuild on every tick would destroy and
-// recreate this element each time, which breaks CSS transitions -- the browser
-// never sees a "before" state to animate from, so it would just teleport to
-// wherever the current phase says it should be instead of flying there.
 const meteorContainer = document.createElement('div');
 meteorContainer.className = 'meteor-container';
 meteorContainer.innerHTML = `
@@ -43,18 +44,21 @@ const meteorFireImg = meteorContainer.querySelector<HTMLImageElement>('.fire-img
 function updateMeteor(): void {
   const phase = getMeteorPhase();
 
-  if (phase === MeteorPhase.EXPLODING) {
+  if (phase === MeteorPhase.EXPLODING || phase === MeteorPhase.GAME_OVER) {
     meteorContainer.style.display = 'none';
     return;
   }
 
   meteorContainer.style.display = '';
   const sizeFraction = Math.min(getMeteorSize() / SIZE_FOR_BOOM, 1);
-  const pixelSize = 40 + sizeFraction * 120; // grows from 40px up to 160px
+  const pixelSize = 40 + sizeFraction * 120; 
   meteorContainer.style.width = `${pixelSize}px`;
   meteorContainer.style.height = `${pixelSize}px`;
   meteorFireImg.style.opacity = String(Math.min(getMeteorBurnedness() / SIZE_FOR_BOOM, 1));
-  meteorContainer.classList.toggle('flying', phase === MeteorPhase.FLYING_TO_CENTER);
+
+  const target = phase === MeteorPhase.FLYING_TO_CENTER ? TREE_POSITION : METEOR_START_POSITION;
+  meteorContainer.style.left = `${target.x}px`;
+  meteorContainer.style.top = `${target.y}px`;
 }
 
 function renderExplosion(): string {
@@ -62,23 +66,33 @@ function renderExplosion(): string {
   return `<img src="${explosion_image}" alt="Explosion" class="explosion-image" />`;
 }
 
+function renderGameOver(): string {
+  if (getMeteorPhase() !== MeteorPhase.GAME_OVER) return '';
+  return `<div class="game-over-text">GAME OVER</div>`;
+}
+
 export function render(state: GameState, onChange: () => void): void {
   app.innerHTML = `
-    <h1>Incremental</h1>
-    <img src="${bevis}" alt="Bevis" class="bevis-image" />
-    <p>lifepoints: <span id="count">${Math.floor(state.lifepoints)}</span></p>
-    <p>loops: ${state.loops}</p>
-    <div class="tree-container">
-      <button id="tree" class="tree-button">
-        <img src="${tree_image}" alt="Tree" />
-      </button>
-      ${renderLeaves(state)}
-      ${renderExplosion()}
+    <div class="world" style="width: ${WORLD_WIDTH}px; height: ${WORLD_HEIGHT}px; background-image: url(${dino_background});">
+      <img src="${bevis}" alt="Bevis" class="bevis-image" style="left: ${BEVIS_POSITION.x}px; top: ${BEVIS_POSITION.y}px;" />
+      <div class="tree-container" style="left: ${TREE_POSITION.x}px; top: ${TREE_POSITION.y}px;">
+        <button id="tree" class="tree-button">
+          <img src="${tree_image}" alt="Tree" />
+        </button>
+        ${renderLeaves(state)}
+        ${renderExplosion()}
+      </div>
     </div>
-    <button id="buy-leaf" ${state.lifepoints < LEAF_COST ? 'disabled' : ''}>
-      Buy Leaf (${LEAF_COST} lifepoints)
-    </button>
-    <button id="clear-leaves">Clear Leaves</button>
+    <div class="hud">
+      <h1>Incremental</h1>
+      <p>lifepoints: <span id="count">${Math.floor(state.lifepoints)}</span></p>
+      <p>loops: ${state.loops}</p>
+      <button id="buy-leaf" ${state.lifepoints < LEAF_COST ? 'disabled' : ''}>
+        Buy Leaf (${LEAF_COST} lifepoints)
+      </button>
+      <button id="clear-leaves">Clear Leaves</button>
+    </div>
+    ${renderGameOver()}
   `;
 
   updateMeteor();

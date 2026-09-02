@@ -2,12 +2,14 @@ export enum MeteorPhase {
   FALLING,
   FLYING_TO_CENTER,
   EXPLODING,
+  GAME_OVER,
 }
 
 export const SIZE_FOR_BOOM = 60;
 
-const FLY_DURATION_TICKS = 3; 
-const EXPLODE_DURATION_TICKS = 2; // must match the game reset firing a beat after the explosion is visible
+const FLY_DURATION_TICKS = 3;
+const EXPLODE_DURATION_TICKS = 2;
+const GAME_OVER_DURATION_TICKS = 2;
 
 let size = 1;
 let burnedness = 0;
@@ -60,6 +62,14 @@ export function tickMeteor(): boolean {
     case MeteorPhase.EXPLODING:
       phaseTicks++;
       if (phaseTicks >= EXPLODE_DURATION_TICKS) {
+        phase = MeteorPhase.GAME_OVER;
+        phaseTicks = 0;
+      }
+      return false;
+
+    case MeteorPhase.GAME_OVER:
+      phaseTicks++;
+      if (phaseTicks >= GAME_OVER_DURATION_TICKS) {
         resetMeteor();
         return true;
       }
