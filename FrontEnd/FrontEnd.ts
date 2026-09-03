@@ -23,6 +23,12 @@ const TREE_POSITION = {
 const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 500 };
 
+// A fixed pixel value, taken once from the same window.innerWidth snapshot as
+// TREE_POSITION above. Using a live viewport unit like `vw` here instead would
+// make the background reflow on browser zoom/resize while everything else
+// (computed once, at load) stays put -- the two would drift apart over time.
+const BACKGROUND_WIDTH = window.innerWidth;
+
 function renderLeaves(state: GameState): string {
   return state.leaves
     .map(
@@ -73,7 +79,7 @@ function renderGameOver(): string {
 
 export function render(state: GameState, onChange: () => void): void {
   app.innerHTML = `
-    <div class="world" style="width: ${WORLD_WIDTH}px; height: ${WORLD_HEIGHT}px; background-image: url(${dino_background});">
+    <div class="world" style="width: ${WORLD_WIDTH}px; height: ${WORLD_HEIGHT}px; background-image: url(${dino_background}); background-size: ${BACKGROUND_WIDTH}px auto;">
       <img src="${bevis}" alt="Bevis" class="bevis-image" style="left: ${BEVIS_POSITION.x}px; top: ${BEVIS_POSITION.y}px;" />
       <div class="tree-container" style="left: ${TREE_POSITION.x}px; top: ${TREE_POSITION.y}px;">
         <button id="tree" class="tree-button">

@@ -42,7 +42,7 @@ export function defaultState(): GameState {
     clickValue: 1,
     upgrades: {
       clickIncrease: 0,
-      photosynthesisIncrease: 0 // life point per leaf/s
+      photosynthesisIncrease: 1 // life point per leaf/s
       // add more upgrades
     },
     leaves: [],

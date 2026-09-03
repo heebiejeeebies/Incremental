@@ -10,6 +10,7 @@ export function countUp(state: GameState) {
   if (state.tickCounter % 2 === 0) {
     const totalLeaves = (state.leaves.length / 5);
     state.lifepoints += totalLeaves * state.upgrades.photosynthesisIncrease;
+    console.log(state.upgrades.photosynthesisIncrease);
   }
 
   if (tickMeteor()) {
