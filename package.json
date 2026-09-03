@@ -24,10 +24,12 @@
     "node": "24.x"
   },
   "devDependencies": {
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   },
   "dependencies": {
+    "break_eternity.js": "^2.1.3",
     "mathjs": "^15.2.0"
   }
 }

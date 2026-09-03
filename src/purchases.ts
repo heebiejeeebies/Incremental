@@ -1,20 +1,23 @@
 import { GameState, Leaf, Fruit} from "./main";
 import {enqueue} from "./buffqueue";
+import Decimal from "break_eternity.js";
 
-export const LEAF_COST = 50;
-export const FRUIT_COST = 20;
-export const FRUIT_BUFF_DURATION= 60;
+// export const LEAF_COST = 50;
+// export const FRUIT_COST = 20;
+export const FRUIT_BUFF_DURATION = 60;
 
 
 export function buyFruit(state: GameState): boolean {
-  if (state.lifepoints < FRUIT_COST) return false;
-  state.lifepoints -= FRUIT_COST;
+  let fruit_cost = getCost(state, 'FRUIT');
+
+  if (state.lifepoints.lessThan(fruit_cost)) return false;
+  state.lifepoints = state.lifepoints.minus(fruit_cost);
   let type = Math.floor(Math.random() * 10);
   if (type < 2) {
     // dud
     state.fruit.push(createFruit("ethanberry"));
   } else if (type < 4) {
-    state.lifepoints += FRUIT_COST + 10;
+    state.lifepoints = state.lifepoints.add(fruit_cost + 10);
     state.fruit.push(createFruit("antonyberry"));
   } else if (type < 6) {
     enqueue(state.buffsqueue, {
@@ -77,8 +80,10 @@ function randomLeaf(): Leaf {
 }
 
 export function buyLeaf(state: GameState): boolean {
-  if (state.lifepoints < LEAF_COST) return false;
-  state.lifepoints -= LEAF_COST;
+  let leafCost = getCost(state, 'LEAF');
+
+  if (state.lifepoints.lessThan(leafCost)) return false;
+  state.lifepoints = state.lifepoints.minus(leafCost);
   for (let i = 0; i < 5; i++) {
     state.leaves.push(randomLeaf());
   }
@@ -91,20 +96,22 @@ export function clearLeaves(state: GameState): void {
 
 export function buyClickIncrease(state: GameState) {
   if (!state) return;
+  let clickIncreaseCost = getCost(state, 'CLICKINCREASE');
 
-  if (state.lifepoints < getCostTemp(state)) return false;
-  state.lifepoints -= LEAF_COST;
+  if (state.lifepoints.lessThan(clickIncreaseCost)) return false;
+  state.lifepoints = state.lifepoints.minus(clickIncreaseCost);
 
-  state.upgrades.clickIncrease++;
+  state.upgrades.clickIncrease = state.upgrades.clickIncrease.add(1);
 }
 
-export function buyPhotosynthesisIncrease(state: GameState) {
+export function buyPhotosynthesis(state: GameState) {
   if (!state) return;
+  let photosynthesisCost = getCost(state, 'PHOTOSYNTHESIS');
 
-  if (state.lifepoints < getCostTemp(state)) return false;
-  state.lifepoints -= LEAF_COST;
+  if (state.lifepoints.lessThan(photosynthesisCost)) return false;
+  state.lifepoints = state.lifepoints.minus(photosynthesisCost);
 
-  state.upgrades.photosynthesisIncrease++;
+  state.upgrades.photosynthesis = state.upgrades.photosynthesis.add(1);
 }
 
 // Temp function for cost of the buying will, will be replaced when getCost is finished
@@ -112,10 +119,16 @@ function getCostTemp(state: GameState): number {
   return state.leaves.length;
 }
 
-// function getCost(state: GameState, upgrade: Upgrades): number {
-//   // checks if you have X amount of Y upgrade, and then returns the cost of it
-//   // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
+function getCost(state: GameState, upgrade: string): number {
+  // checks if you have X amount of Y upgrade, and then returns the cost of it
+  // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
+  if (upgrade === 'CLICKINCREASE') {
   
-//   // Placeholder cost
-//   return state.leaves.length;
-// }
+  } else if (upgrade === 'FRUIT') {
+
+  } else if (upgrade === 'PHOTOSYNTHESIS') {
+
+  }
+  // Placeholder cost
+  return state.leaves.length;
+}
