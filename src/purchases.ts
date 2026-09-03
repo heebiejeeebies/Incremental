@@ -1,6 +1,63 @@
-import { GameState, Leaf} from "./main";
+import { GameState, Leaf, Fruit} from "./main";
+import {enqueue} from "./buffqueue";
 
 export const LEAF_COST = 50;
+export const FRUIT_COST = 20;
+export const FRUIT_BUFF_DURATION= 60;
+
+
+export function buyFruit(state: GameState): boolean {
+  if (state.lifepoints < FRUIT_COST) return false;
+  state.lifepoints -= FRUIT_COST;
+  let type = Math.floor(Math.random() * 10);
+  if (type < 2) {
+    // dud
+    state.fruit.push(createFruit("ethanberry"));
+  } else if (type < 4) {
+    state.lifepoints += FRUIT_COST + 10;
+    state.fruit.push(createFruit("antonyberry"));
+  } else if (type < 6) {
+    enqueue(state.buffsqueue, {
+      type: "will", 
+      remainingTicks: FRUIT_BUFF_DURATION
+    });
+    state.fruit.push(createFruit("izaacberry"));
+  } else if (type < 8) {
+    enqueue(state.buffsqueue, {
+      type: "leaf", 
+      remainingTicks: FRUIT_BUFF_DURATION
+    });
+    state.fruit.push(createFruit("allenberry"));
+  } else {
+    enqueue(state.buffsqueue, {
+      type: "will&leaf", 
+      remainingTicks: FRUIT_BUFF_DURATION
+    });
+    state.fruit.push(createFruit("kevinberry"));
+  }
+
+  return true;
+}
+
+function createFruit(type: string): Fruit {
+  const centerX = 51;
+  const centerY = 27.5;
+  const radiusX = 19;
+  const radiusY = 22.5;
+
+  const angle = Math.random() * 2 * Math.PI;
+  const radius = Math.sqrt(Math.random()); 
+
+  return {
+    x: centerX + Math.cos(angle) * radius * radiusX,
+    y: centerY + Math.sin(angle) * radius * radiusY,
+    typeName: type
+  };
+}
+
+export function clearFruit(state: GameState): void {
+  state.fruit = [];
+}
 
 function randomLeaf(): Leaf {
   // scattered in an ellipse around de tree

@@ -1,5 +1,6 @@
 import { GameState, Extinction, defaultState } from "./main"
 import { tickMeteor } from "./meteor"
+import {peep, dequeue} from "./buffqueue"
 
 // time moving
 export function countUp(state: GameState) {
@@ -9,12 +10,26 @@ export function countUp(state: GameState) {
   // every 2 seconds add a point for each 5 leaves
   if (state.tickCounter % 2 === 0) {
     const totalLeaves = (state.leaves.length / 5);
-    state.lifepoints += totalLeaves * state.upgrades.photosynthesisIncrease;
-    console.log(state.upgrades.photosynthesisIncrease);
+    let increase = totalLeaves * state.upgrades.photosynthesisIncrease;
+    const activeBuff = peep(state.buffsqueue);
+    if (activeBuff === "leaf" || activeBuff === "will&leaf") {
+      increase = increase * 2;
+    }
+    state.lifepoints += increase;
   }
+
+  tickBuffs(state);
 
   if (tickMeteor()) {
     state.extinction = Extinction.ASTEROID;
+  }
+}
+
+function tickBuffs(state: GameState) {
+  if (state.buffsqueue.length === 0) return;
+  state.buffsqueue[0].remainingTicks--;
+  if (state.buffsqueue[0].remainingTicks <= 0) {
+    dequeue(state.buffsqueue);
   }
 }
 
