@@ -5,7 +5,7 @@ export enum MeteorPhase {
   GAME_OVER,
 }
 
-export const SIZE_FOR_BOOM = 60;
+export const SIZE_FOR_BOOM = 120;
 
 const FLY_DURATION_TICKS = 3;
 const EXPLODE_DURATION_TICKS = 2;
