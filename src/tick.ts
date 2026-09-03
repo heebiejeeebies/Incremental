@@ -1,5 +1,6 @@
 import { GameState, Extinction, defaultState } from "./main"
 import { tickMeteor } from "./meteor"
+import { randomLeaf } from "./purchases"
 import {peep, dequeue} from "./buffqueue"
 
 // time moving
@@ -18,6 +19,14 @@ export function countUp(state: GameState) {
     state.lifepoints += increase;
   }
 
+  // every 3 (for testing purpses) seconds add 5 leaves for each aura farm
+  if (state.tickCounter % 3 === 0) {
+    const totalAuraFarms = state.upgrades.auraFarm;
+    for (let i = 0; i < totalAuraFarms * 5; i++) {
+      state.leaves.push(randomLeaf());
+    }
+  }
+  
   tickBuffs(state);
 
   if (tickMeteor()) {

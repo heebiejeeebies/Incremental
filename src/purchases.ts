@@ -59,7 +59,7 @@ export function clearFruit(state: GameState): void {
   state.fruit = [];
 }
 
-function randomLeaf(): Leaf {
+export function randomLeaf(): Leaf {
   // scattered in an ellipse around de tree
   const centerX = 51;
   const centerY = 27.5;
@@ -105,6 +105,15 @@ export function buyPhotosynthesisIncrease(state: GameState) {
   state.lifepoints -= LEAF_COST;
 
   state.upgrades.photosynthesisIncrease++;
+}
+
+export function buyAuraFarm(state: GameState) {
+  if (!state) return;
+
+  if (state.lifepoints < 100) return false;
+  state.lifepoints -= 100;
+  state.upgrades.auraFarm++;
+  return true;
 }
 
 // Temp function for cost of the buying will, will be replaced when getCost is finished

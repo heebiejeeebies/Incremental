@@ -43,9 +43,9 @@ export interface GameState {
 
 export interface Upgrades {
   clickIncrease: number,
-  photosynthesisIncrease: number
+  photosynthesisIncrease: number,
+  auraFarm: number
   // add other upgrades which could be objects that contain other special fields
-  
 }
 
 export function defaultState(): GameState {
@@ -55,7 +55,8 @@ export function defaultState(): GameState {
     clickValue: 1,
     upgrades: {
       clickIncrease: 0,
-      photosynthesisIncrease: 1 // life point per leaf/s
+      photosynthesisIncrease: 1, // life point per leaf/s
+      auraFarm: 0
       // add more upgrades
     },
     leaves: [],
