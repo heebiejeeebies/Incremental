@@ -1,7 +1,8 @@
 import { GameState } from "./main";
 
 export function clickTree(state: GameState) {
-    
-  state.lifepoints += state.clickValue;
+  const totalClickValue = state.clickValue + state.upgrades.clickIncrease;
+  state.lifepoints += totalClickValue;
 }
+
 

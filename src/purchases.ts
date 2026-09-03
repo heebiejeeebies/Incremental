@@ -1,4 +1,4 @@
-import { GameState, Leaf } from "./main";
+import { GameState, Leaf} from "./main";
 
 export const LEAF_COST = 50;
 
@@ -32,18 +32,24 @@ export function clearLeaves(state: GameState): void {
   state.leaves = [];
 }
 
-// import { GameState, Upgrades} from "./main";
+export function buyClickIncrease(state: GameState) {
+  if (!state) return;
 
-// function buyClickIncrease(state: GameState) {
-//   if (state.lifepoints)
-//   state.upgrades.clickIncrease++;
+  if (state.lifepoints < getCostClickIncrease(state)) return;
+
+  state.upgrades.clickIncrease++;
+}
+
+// Temp function for cost of the buying will, will be replaced when getCost is finished
+function getCostClickIncrease(state: GameState): number {
   
-// }
+  return state.leaves.length;
+}
 
-// // function getCost(state: GameState, upgrade: Upgrades): number {
-// //   // checks if you have X amount of Y upgrade, and then returns the cost of it
-// //   // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
-// //   if (upgrade)
-// //   state.
-// //   return 0;
-// // }
+// function getCost(state: GameState, upgrade: Upgrades): number {
+//   // checks if you have X amount of Y upgrade, and then returns the cost of it
+//   // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
+  
+//   // Placeholder cost
+//   return state.leaves.length;
+// }
