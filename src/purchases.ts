@@ -1,6 +1,6 @@
 import { GameState, Leaf, Fruit} from "./main";
 import {enqueue} from "./buffqueue";
-import Decimal from "break_eternity.js";
+// import Decimal from "break_eternity.js";
 
 // export const LEAF_COST = 50;
 // export const FRUIT_COST = 20;
@@ -112,11 +112,6 @@ export function buyPhotosynthesis(state: GameState) {
   state.lifepoints = state.lifepoints.minus(photosynthesisCost);
 
   state.upgrades.photosynthesis = state.upgrades.photosynthesis.add(1);
-}
-
-// Temp function for cost of the buying will, will be replaced when getCost is finished
-function getCostTemp(state: GameState): number {
-  return state.leaves.length;
 }
 
 function getCost(state: GameState, upgrade: string): number {
