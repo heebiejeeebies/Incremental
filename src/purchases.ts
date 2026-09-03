@@ -62,7 +62,7 @@ export function clearFruit(state: GameState): void {
   state.fruit = [];
 }
 
-function randomLeaf(): Leaf {
+export function randomLeaf(): Leaf {
   // scattered in an ellipse around de tree
   const centerX = 51;
   const centerY = 27.5;

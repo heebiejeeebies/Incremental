@@ -47,7 +47,6 @@ export interface Upgrades {
   leaf: Decimal,
   photosynthesis: Decimal
   // add other upgrades which could be objects that contain other special fields
-  
 }
 
 export function defaultState(): GameState {

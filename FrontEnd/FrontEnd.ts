@@ -149,6 +149,11 @@ export function render(state: GameState, onChange: () => void): void {
     onChange();
   });
 
+  document.querySelector<HTMLButtonElement>('#buy-aurafarm')!.addEventListener('click', () => {
+    if (buyAuraFarm(state)) {
+      onChange();
+    }
+  });
   document.querySelector<HTMLButtonElement>('#buy-fruit')!.addEventListener('click', () => {
     if (buyFruit(state)) {
       onChange();
