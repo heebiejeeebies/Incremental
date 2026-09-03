@@ -26,5 +26,8 @@
   "devDependencies": {
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
+  },
+  "dependencies": {
+    "mathjs": "^15.2.0"
   }
 }
