@@ -1,9 +1,8 @@
 import { GameState, Leaf, Fruit} from "./main";
 import {enqueue} from "./buffqueue";
-// import Decimal from "break_eternity.js";
+import { costLeaf, costAurafarm, costClickIncrease, costFruit, costPhotoSynthesis } from "./growth";
+import Decimal from "break_eternity.js";
 
-// export const LEAF_COST = 50;
-// export const FRUIT_COST = 20;
 export const FRUIT_BUFF_DURATION = 60;
 
 
@@ -17,7 +16,7 @@ export function buyFruit(state: GameState): boolean {
     // dud
     state.fruit.push(createFruit("ethanberry"));
   } else if (type < 4) {
-    state.lifepoints = state.lifepoints.add(fruit_cost + 10);
+    state.lifepoints = state.lifepoints.add(fruit_cost).add(10);
     state.fruit.push(createFruit("antonyberry"));
   } else if (type < 6) {
     enqueue(state.buffsqueue, {
@@ -124,18 +123,20 @@ export function buyAuraFarm(state: GameState) {
     return true;
 }
 
-function getCost(state: GameState, upgrade: string): number {
+function getCost(state: GameState, upgrade: string): Decimal {
   // checks if you have X amount of Y upgrade, and then returns the cost of it
   // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
-  if (upgrade === 'CLICKINCREASE') {
-  
+  if (upgrade === 'LEAF') {
+    return costLeaf(state.upgrades.leaf);
+  } else if (upgrade === 'CLICKINCREASE') {
+    return costClickIncrease(state.upgrades.clickIncrease);
   } else if (upgrade === 'FRUIT') {
-
+    return costFruit(state.fruit.length);
   } else if (upgrade === 'PHOTOSYNTHESIS') {
-
+    return costPhotoSynthesis(state.upgrades.photosynthesis);
   } else if (upgrade === 'AURAFARM') {
-    
+    return costAurafarm(state.upgrades.aurafarm);
   }
   // Placeholder cost
-  return state.leaves.length;
+  return new Decimal(0);
 }

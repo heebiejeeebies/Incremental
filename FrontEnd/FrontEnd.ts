@@ -14,6 +14,8 @@ import antony_image from './assets/antony.png'
 import ethan_image from './assets/ethan.png'
 import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
+import {costFruit, costLeaf} from '../src/growth.js';
+// import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -109,6 +111,12 @@ function renderGameOver(): string {
 }
 
 export function render(state: GameState, onChange: () => void): void {
+  const leafCost = costLeaf(state.upgrades.leaf);
+  const fruitCost = costFruit(state.fruit.length);
+  // const photosynthesisCost = costPhotoSynthesis(state.upgrades.photosynthesis);
+  // const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
+  // const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
+
   app.innerHTML = `
     <div class="world" style="width: ${WORLD_WIDTH}px; height: ${WORLD_HEIGHT}px; background-image: url(${dino_background}); background-size: ${BACKGROUND_WIDTH}px auto;">
       <img src="${bevis}" alt="Bevis" class="bevis-image" style="left: ${BEVIS_POSITION.x}px; top: ${BEVIS_POSITION.y}px;" />
@@ -126,6 +134,16 @@ export function render(state: GameState, onChange: () => void): void {
       <p>lifepoints: <span id="count">${state.lifepoints.floor().toString}</span></p>
       <p>loops: ${state.loops}</p>
       ${renderActiveBuff(state)}
+      <button id="buy-leaf" ${state.lifepoints < leafCost ? 'disabled' : ''}>
+        Buy Leaf (${leafCost} lifepoints)
+      </button>
+      <button id="buy-aurafarm" ${state.lifepoints.lessThan(100) ? 'disabled' : ''}>
+        Buy Aurafarm (100 lifepoints)
+      </button>
+      <button id="clear-leaves">Clear Leaves</button>
+      <button id="buy-fruit" ${state.lifepoints < fruitCost ? 'disabled' : ''}>
+        Buy Fruit (${fruitCost} lifepoints)
+      </button>
       <button id="clear-fruit">Clear Fruit</button>
     </div>
     ${renderGameOver()}
