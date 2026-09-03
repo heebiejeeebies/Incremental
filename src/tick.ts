@@ -8,7 +8,8 @@ export function countUp(state: GameState) {
 
   // every 2 seconds add a point for each 5 leaves
   if (state.tickCounter % 2 === 0) {
-    state.lifepoints += (state.leaves.length / 5);
+    const totalLeaves = (state.leaves.length / 5);
+    state.lifepoints += totalLeaves * state.upgrades.photosynthesisIncrease;
   }
 
   if (tickMeteor()) {

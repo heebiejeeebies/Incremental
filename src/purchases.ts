@@ -35,14 +35,23 @@ export function clearLeaves(state: GameState): void {
 export function buyClickIncrease(state: GameState) {
   if (!state) return;
 
-  if (state.lifepoints < getCostClickIncrease(state)) return;
+  if (state.lifepoints < getCostTemp(state)) return false;
+  state.lifepoints -= LEAF_COST;
 
   state.upgrades.clickIncrease++;
 }
 
+export function buyPhotosynthesisIncrease(state: GameState) {
+  if (!state) return;
+
+  if (state.lifepoints < getCostTemp(state)) return false;
+  state.lifepoints -= LEAF_COST;
+
+  state.upgrades.photosynthesisIncrease++;
+}
+
 // Temp function for cost of the buying will, will be replaced when getCost is finished
-function getCostClickIncrease(state: GameState): number {
-  
+function getCostTemp(state: GameState): number {
   return state.leaves.length;
 }
 
