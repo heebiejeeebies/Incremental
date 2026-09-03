@@ -40,7 +40,7 @@ export function defaultState(): GameState {
     lifepoints: 0,
     clickValue: 1,
     upgrades: {
-      clickIncrease: 67, // temp
+      clickIncrease: 0
       // add more upgrades
     },
     leaves: [],
