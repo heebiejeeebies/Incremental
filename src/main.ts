@@ -20,7 +20,7 @@ export interface Leaf {
 export interface GameState {
   loops: number;
   lifepoints: number;
-  clickValue: number;
+  will: number;
   upgrades: Upgrades;
   leaves: Leaf[];
   tickCounter: number;
@@ -38,7 +38,7 @@ export function defaultState(): GameState {
   return {
     loops: 0,
     lifepoints: 0,
-    clickValue: 1,
+    will: 1,
     upgrades: {
       clickIncrease: 0,
       // add more upgrades
