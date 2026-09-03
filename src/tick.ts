@@ -8,15 +8,15 @@ export function countUp(state: GameState) {
   if (!state) return;
   state.tickCounter = (state.tickCounter + state.tickRate) % 500;
 
-  // every 2 seconds add a point for each 5 leaves
+  // every second add a point for each leaf (including multipliers)
   if (state.tickCounter % 2 === 0) {
-    const totalLeaves = (state.leaves.length / 5);
-    let increase = totalLeaves * state.upgrades.photosynthesisIncrease;
+    const totalLeaves = state.upgrades.leaf.div(5);
+    let increase = totalLeaves.mul(state.upgrades.photosynthesis);
     const activeBuff = peep(state.buffsqueue);
     if (activeBuff === "leaf" || activeBuff === "will&leaf") {
-      increase = increase * 2;
+      increase = increase.mul(2);
     }
-    state.lifepoints += increase;
+    state.lifepoints = state.lifepoints.add(increase);
   }
 
   // every 3 (for testing purpses) seconds add 5 leaves for each aura farm

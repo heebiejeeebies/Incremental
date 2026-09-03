@@ -1,5 +1,6 @@
 import { countUp, checkExtinctions } from "./tick";
 import { render } from "../FrontEnd/FrontEnd.js";
+import Decimal from "break_eternity.js";
 
 const SAVE_KEY = 'incremental-save';
 const TICK_INTERVAL_MS = 1000;
@@ -30,8 +31,8 @@ export interface Fruit {
 
 export interface GameState {
   loops: number;
-  lifepoints: number;
-  clickValue: number;
+  lifepoints: Decimal;
+  will: Decimal;
   upgrades: Upgrades;
   leaves: Leaf[];
   fruit: Fruit[];
@@ -42,21 +43,21 @@ export interface GameState {
 }
 
 export interface Upgrades {
-  clickIncrease: number,
-  photosynthesisIncrease: number,
-  auraFarm: number
+  clickIncrease: Decimal,
+  leaf: Decimal,
+  photosynthesis: Decimal
   // add other upgrades which could be objects that contain other special fields
 }
 
 export function defaultState(): GameState {
   return {
     loops: 0,
-    lifepoints: 0,
-    clickValue: 1,
+    lifepoints: new Decimal(0),
+    will: new Decimal(1),
     upgrades: {
-      clickIncrease: 0,
-      photosynthesisIncrease: 1, // life point per leaf/s
-      auraFarm: 0
+      clickIncrease: new Decimal(0),
+      leaf: new Decimal(0),
+      photosynthesis: new Decimal(1) // life point per leaf/s
       // add more upgrades
     },
     leaves: [],
