@@ -45,7 +45,8 @@ export interface GameState {
 export interface Upgrades {
   clickIncrease: Decimal,
   leaf: Decimal,
-  photosynthesis: Decimal
+  photosynthesis: Decimal,
+  aurafarm: Decimal
   // add other upgrades which could be objects that contain other special fields
 }
 
@@ -57,7 +58,8 @@ export function defaultState(): GameState {
     upgrades: {
       clickIncrease: new Decimal(0),
       leaf: new Decimal(0),
-      photosynthesis: new Decimal(1) // life point per leaf/s
+      photosynthesis: new Decimal(1), // life point per leaf/s
+      aurafarm: new Decimal(0)
       // add more upgrades
     },
     leaves: [],

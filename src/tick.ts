@@ -21,8 +21,8 @@ export function countUp(state: GameState) {
 
   // every 3 (for testing purpses) seconds add 5 leaves for each aura farm
   if (state.tickCounter % 3 === 0) {
-    const totalAuraFarms = state.upgrades.auraFarm;
-    for (let i = 0; i < totalAuraFarms * 5; i++) {
+    const totalAuraFarms = state.upgrades.aurafarm;
+    for (let i = 0; totalAuraFarms.mul(5).greaterThan(i); i++) {
       state.leaves.push(randomLeaf());
     }
   }

@@ -114,6 +114,16 @@ export function buyPhotosynthesis(state: GameState) {
   state.upgrades.photosynthesis = state.upgrades.photosynthesis.add(1);
 }
 
+export function buyAuraFarm(state: GameState) {
+  const aurafarmCost = getCost(state, 'AURAFARM');
+
+  if (!state) return;
+   if (state.lifepoints.lessThan(aurafarmCost)) return false;
+    state.lifepoints = state.lifepoints.minus(aurafarmCost);
+    state.upgrades.aurafarm = state.upgrades.aurafarm.add(1);
+    return true;
+}
+
 function getCost(state: GameState, upgrade: string): number {
   // checks if you have X amount of Y upgrade, and then returns the cost of it
   // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
@@ -123,6 +133,8 @@ function getCost(state: GameState, upgrade: string): number {
 
   } else if (upgrade === 'PHOTOSYNTHESIS') {
 
+  } else if (upgrade === 'AURAFARM') {
+    
   }
   // Placeholder cost
   return state.leaves.length;

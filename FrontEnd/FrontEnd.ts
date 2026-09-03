@@ -1,6 +1,6 @@
 import type { GameState } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
-import { buyLeaf, clearLeaves, buyFruit, clearFruit } from '../src/purchases.js'
+import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
 import dino_background from './assets/background.png'
 import tree_image from './assets/treewow.png'
