@@ -6,13 +6,26 @@
     <title>Incremental</title>
     <style>
       body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
         margin: 0;
         font-family: sans-serif;
         text-align: center;
+      }
+      .world {
+        position: static;
+        background-position: top left;
+        background-repeat: no-repeat;
+      }
+      .hud {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding-top: 1rem;
+        pointer-events: none;
+        z-index: 30;
+      }
+      .hud button {
+        pointer-events: auto;
       }
       .tree-button {
         background: none;
@@ -26,32 +39,29 @@
         display: block;
       }
       .bevis-image {
+        position: absolute;
         width: 200px;
-        position:absolute;
-        top: 500px;
-        left: 500px;
       }
       .tree-container {
-        position: relative;
-        display: inline-block;
-        margin-left: 250px;
+        position: absolute;
+        transform: translate(-50%, -50%);
       }
       .leaf-image {
         position: absolute;
         width: 40px;
         pointer-events: none;
       }
+      .fruit-image {
+        position: absolute;
+        width: 70px;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+      }
       .meteor-container {
         position: absolute;
-        top: 8%;
-        left: 12%;
         transform: translate(-50%, -50%) rotate(-45deg);
         transition: top 3s linear, left 3s linear;
         pointer-events: none;
-      }
-      .meteor-container.flying {
-        top: 50%;
-        left: 50%;
       }
       .meteor-img {
         position: absolute;
@@ -72,10 +82,23 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 300px;
-        max-width: 60vw;
+        width: 900px;
+        max-width: 95vw;
         transform: translate(-50%, -50%);
         pointer-events: none;
+        z-index: 10;
+      }
+      .game-over-text {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: red;
+        font-size: 6rem;
+        font-weight: bold;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 40;
       }
     </style>
   </head>

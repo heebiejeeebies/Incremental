@@ -17,12 +17,25 @@ export interface Leaf {
   rotation: number; // rotation
 }
 
+export interface Buff {
+  type: string;
+  remainingTicks: number;
+}
+
+export interface Fruit {
+  x: number; // coords
+  y: number; 
+  typeName: string; // rotation
+}
+
 export interface GameState {
   loops: number;
   lifepoints: number;
   will: number;
   upgrades: Upgrades;
   leaves: Leaf[];
+  fruit: Fruit[];
+  buffsqueue: Buff[];
   tickCounter: number;
   tickRate: number;
   extinction: Extinction;
@@ -30,6 +43,7 @@ export interface GameState {
 
 export interface Upgrades {
   clickIncrease: number,
+  photosynthesisIncrease: number
   // add other upgrades which could be objects that contain other special fields
   
 }
@@ -41,9 +55,12 @@ export function defaultState(): GameState {
     will: 1,
     upgrades: {
       clickIncrease: 0,
+      photosynthesisIncrease: 1 // life point per leaf/s
       // add more upgrades
     },
     leaves: [],
+    buffsqueue: [],
+    fruit: [],
     tickCounter: 0,
     tickRate: 1,
     extinction: Extinction.ALIVE,
