@@ -18,7 +18,7 @@ const WORLD_HEIGHT = 2000;
 const HUD_HEIGHT_ESTIMATE = 180;
 const TREE_POSITION = {
   x: window.innerWidth / 2 + 125,
-  y: HUD_HEIGHT_ESTIMATE + (window.innerHeight - HUD_HEIGHT_ESTIMATE) / 2,
+  y: HUD_HEIGHT_ESTIMATE + (window.innerHeight - HUD_HEIGHT_ESTIMATE) / 2 - 20,
 };
 const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 500 };
