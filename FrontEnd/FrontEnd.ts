@@ -1,6 +1,6 @@
 import type { GameState } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
-import { buyLeaf, clearLeaves, LEAF_COST, buyFruit, clearFruit, FRUIT_COST } from '../src/purchases.js'
+import { buyLeaf, clearLeaves, buyFruit, clearFruit } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
 import dino_background from './assets/background.png'
 import tree_image from './assets/treewow.png'
@@ -123,16 +123,9 @@ export function render(state: GameState, onChange: () => void): void {
     </div>
     <div class="hud">
       <h1>Incremental</h1>
-      <p>lifepoints: <span id="count">${Math.floor(state.lifepoints)}</span></p>
+      <p>lifepoints: <span id="count">${state.lifepoints.floor().toString}</span></p>
       <p>loops: ${state.loops}</p>
       ${renderActiveBuff(state)}
-      <button id="buy-leaf" ${state.lifepoints < LEAF_COST ? 'disabled' : ''}>
-        Buy Leaf (${LEAF_COST} lifepoints)
-      </button>
-      <button id="clear-leaves">Clear Leaves</button>
-      <button id="buy-fruit" ${state.lifepoints < FRUIT_COST ? 'disabled' : ''}>
-        Buy Fruit (${FRUIT_COST} lifepoints)
-      </button>
       <button id="clear-fruit">Clear Fruit</button>
     </div>
     ${renderGameOver()}
