@@ -1,6 +1,6 @@
 import type { GameState } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
-import { buyLeaf, clearLeaves, LEAF_COST } from '../src/purchases.js'
+import { buyLeaf, clearLeaves, buyAuraFarm ,LEAF_COST } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
 import dino_background from './assets/background.png'
 import tree_image from './assets/treewow.png'
@@ -90,6 +90,9 @@ export function render(state: GameState, onChange: () => void): void {
       <button id="buy-leaf" ${state.lifepoints < LEAF_COST ? 'disabled' : ''}>
         Buy Leaf (${LEAF_COST} lifepoints)
       </button>
+      <button id="buy-aurafarm" ${state.lifepoints < 100 ? 'disabled' : ''}>
+        Buy Aurafarm (100 lifepoints)
+      </button>
       <button id="clear-leaves">Clear Leaves</button>
     </div>
     ${renderGameOver()}
@@ -111,5 +114,11 @@ export function render(state: GameState, onChange: () => void): void {
   document.querySelector<HTMLButtonElement>('#clear-leaves')!.addEventListener('click', () => {
     clearLeaves(state);
     onChange();
+  });
+
+  document.querySelector<HTMLButtonElement>('#buy-aurafarm')!.addEventListener('click', () => {
+    if (buyAuraFarm(state)) {
+      onChange();
+    }
   });
 }
