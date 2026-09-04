@@ -12,20 +12,33 @@
       }
       .world {
         position: static;
-        background-position: top left;
-        background-repeat: no-repeat;
+        background-color: #4a90e2;
       }
-      .hud {
-        position: fixed;
+      .ground-image {
+        position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        padding-top: 1rem;
-        pointer-events: none;
-        z-index: 30;
       }
-      .hud button {
-        pointer-events: auto;
+      .sun-image {
+        position: absolute;
+        transform: translate(-50%, -50%);
+      }
+      .controls {
+        position: absolute;
+        text-align: left;
+        z-index: 20;
+      }
+      .stats-panel {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        text-align: left;
+        z-index: 20;
+      }
+      .stats-panel p {
+        margin: 0.25rem 0;
       }
       .tree-button {
         background: none;

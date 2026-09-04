@@ -2,7 +2,8 @@ import type { GameState } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
 import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
-import dino_background from './assets/background.png'
+import ground_image from './assets/ground.png'
+import sun_image from './assets/sun.png'
 import tree_image from './assets/treewow.png'
 import bevis from './assets/bevis.png'
 import leaf_image from './assets/leaf.png'
@@ -19,18 +20,50 @@ import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
-const WORLD_WIDTH = 3000;
-const WORLD_HEIGHT = 2000;
+// The world starts locked to exactly one screen (no scroll possible at all --
+// there's nothing to scroll to). Once unlocked, it expands to this larger
+// fixed size and becomes scrollable/zoomable. There's no real trigger for
+// this yet, so it's just a manual flag for now (see the "Unlock World" cheat
+// button below) -- wire up a real condition once one exists.
+const EXPANDED_WORLD_WIDTH = 4000;
+const EXPANDED_WORLD_HEIGHT = 2000;
+let worldUnlocked = false;
 
-const HUD_HEIGHT_ESTIMATE = 180;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2;
+const ZOOM_STEP = 0.0015; // multiplied by wheel deltaY per event
+let zoomLevel = 1;
+
+// Ground is stretched (aspect ratio ignored, on purpose) to exactly cover one
+// screen's worth of the world, computed once from the viewport at load --
+// same fixed-pixel-not-vw approach as everywhere else, so it doesn't drift
+// out of sync with the rest of the world on browser zoom/resize.
+const GROUND_WIDTH = window.innerWidth;
+const GROUND_HEIGHT = window.innerHeight;
+
+const SUN_SIZE = 180;
+const SUN_MARGIN = 40;
+const SUN_POSITION = {
+  x: window.innerWidth - SUN_MARGIN - SUN_SIZE / 2,
+  y: SUN_MARGIN + SUN_SIZE / 2,
+};
+
+// The tree just needs to sit clear of the controls panel (anchored at
+// CONTROLS_POSITION, top-left), not dodge a full-width overlay anymore, so
+// this no longer needs to be measured/corrected after the fact.
 const TREE_POSITION = {
-  x: window.innerWidth / 2 + 125,
-  y: HUD_HEIGHT_ESTIMATE + (window.innerHeight - HUD_HEIGHT_ESTIMATE) / 2 - 20,
+  x: window.innerWidth / 2,
+  y: window.innerHeight / 2 + 120,
 };
 const METEOR_START_POSITION = { x: 400, y: 300 };
-const BEVIS_POSITION = { x: 500, y: 500 };
+const BEVIS_POSITION = { x: 500, y: 650 };
 
-const BACKGROUND_WIDTH = window.innerWidth;
+// Controls (buttons, counters) and the stats panel are just regular objects
+// positioned on the canvas now, not a fixed screen overlay -- they scroll
+// away with the rest of the world like everything else.
+const CONTROLS_WIDTH = 300;
+const CONTROLS_POSITION = { x: 40, y: 40 };
+const STATS_PANEL_POSITION = { x: CONTROLS_POSITION.x + CONTROLS_WIDTH + 20, y: CONTROLS_POSITION.y };
 
 let showStats = false;
 
@@ -106,6 +139,7 @@ const cheat = document.createElement('div');
 cheat.innerHTML = `
   <input type="text" id="cheat" placeholder="get bajillion LP" style= "pointer-events: auto; cursor: text;" />
   <button id="cheat-button">Add LP</button>
+  <button id="unlock-world-button">Unlock World</button>
 `;
 document.body.appendChild(cheat);
 
@@ -127,8 +161,17 @@ export function render(state: GameState, onChange: () => void): void {
   const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
   const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
 
+  // Locked: exactly one screen, nothing to scroll to. Unlocked: the larger
+  // fixed size, scrollable and zoomable via the wheel listener below.
+  const worldWidth = worldUnlocked ? EXPANDED_WORLD_WIDTH : window.innerWidth;
+  const worldHeight = worldUnlocked ? EXPANDED_WORLD_HEIGHT : window.innerHeight;
+  document.body.style.overflow = worldUnlocked ? 'auto' : 'hidden';
+  document.documentElement.style.overflow = worldUnlocked ? 'auto' : 'hidden';
+
   app.innerHTML = `
-    <div class="world" style="width: ${WORLD_WIDTH}px; height: ${WORLD_HEIGHT}px; background-image: url(${dino_background}); background-size: ${BACKGROUND_WIDTH}px auto;">
+    <div class="world" style="width: ${worldWidth}px; height: ${worldHeight}px; transform: scale(${zoomLevel}); transform-origin: 0 0;">
+      <img src="${ground_image}" alt="Ground" class="ground-image" style="width: ${GROUND_WIDTH}px; height: ${GROUND_HEIGHT}px;" />
+      <img src="${sun_image}" alt="Sun" class="sun-image" style="left: ${SUN_POSITION.x}px; top: ${SUN_POSITION.y}px; width: ${SUN_SIZE}px; height: ${SUN_SIZE}px;" />
       <img src="${bevis}" alt="Bevis" class="bevis-image" style="left: ${BEVIS_POSITION.x}px; top: ${BEVIS_POSITION.y}px;" />
       <div class="tree-container" style="left: ${TREE_POSITION.x}px; top: ${TREE_POSITION.y}px;">
         <button id="tree" class="tree-button">
@@ -138,34 +181,34 @@ export function render(state: GameState, onChange: () => void): void {
         ${renderFruit(state)}
         ${renderExplosion()}
       </div>
-    </div>
-    <div class="hud">
-      <h1>Incremental</h1>
-      <p>lifepoints: <span id="count">${state.lifepoints.floor().toString()}</span></p>
-      <p>loops: ${state.loops}</p>
-      ${renderActiveBuff(state)}
-      <button id="buy-leaf" ${state.lifepoints.lessThan(leafCost) ? 'disabled' : ''}>
-        Buy Leaf (${leafCost} lifepoints)
-      </button>
-      <button id="clear-leaves">Clear Leaves</button>
-       <button id="buy-click-increase" ${state.lifepoints.lessThan(clickIncreaseCost) ? 'disabled' : ''}>
-        Buy Click Increase (${clickIncreaseCost} lifepoints)
-      </button>
-      <button id="buy-aurafarm" ${state.lifepoints.lessThan(aurafarmCost) ? 'disabled' : ''}>
-        Buy Aurafarm (${aurafarmCost} lifepoints)
-      </button>
-      <button id="buy-photosynthesis" ${state.lifepoints.lessThan(photosynthesisCost) ? 'disabled' : ''}>
-        Buy Photosynthesis (${photosynthesisCost} lifepoints)
-      </button>
-      <button id="buy-fruit" ${state.lifepoints.lessThan(fruitCost) ? 'disabled' : ''}>
-        Buy Fruit (${fruitCost} lifepoints)
-      </button>
-      <button id="clear-fruit">Clear Fruit</button>
-      <button id="toggle-stats">
-        ${showStats ? 'Hide Stats' : 'Show Stats'}
-      </button>
+      <div class="controls" style="left: ${CONTROLS_POSITION.x}px; top: ${CONTROLS_POSITION.y}px; width: ${CONTROLS_WIDTH}px;">
+        <h1>Incremental</h1>
+        <p>lifepoints: <span id="count">${state.lifepoints.floor().toString()}</span></p>
+        <p>loops: ${state.loops}</p>
+        ${renderActiveBuff(state)}
+        <button id="buy-leaf" ${state.lifepoints.lessThan(leafCost) ? 'disabled' : ''}>
+          Buy Leaf (${leafCost} lifepoints)
+        </button>
+        <button id="clear-leaves">Clear Leaves</button>
+        <button id="buy-click-increase" ${state.lifepoints.lessThan(clickIncreaseCost) ? 'disabled' : ''}>
+          Buy Click Increase (${clickIncreaseCost} lifepoints)
+        </button>
+        <button id="buy-aurafarm" ${state.lifepoints.lessThan(aurafarmCost) ? 'disabled' : ''}>
+          Buy Aurafarm (${aurafarmCost} lifepoints)
+        </button>
+        <button id="buy-photosynthesis" ${state.lifepoints.lessThan(photosynthesisCost) ? 'disabled' : ''}>
+          Buy Photosynthesis (${photosynthesisCost} lifepoints)
+        </button>
+        <button id="buy-fruit" ${state.lifepoints.lessThan(fruitCost) ? 'disabled' : ''}>
+          Buy Fruit (${fruitCost} lifepoints)
+        </button>
+        <button id="clear-fruit">Clear Fruit</button>
+        <button id="toggle-stats">
+          ${showStats ? 'Hide Stats' : 'Show Stats'}
+        </button>
+      </div>
       ${showStats ? `
-        <div class="stats-panel">
+        <div class="stats-panel" style="left: ${STATS_PANEL_POSITION.x}px; top: ${STATS_PANEL_POSITION.y}px;">
           <p> WILL: ${state.will}</p>
           <p> Click Increases: ${state.upgrades.clickIncrease}</p>
           <p> Leaves: ${state.upgrades.leaf.toString()}</p>
@@ -236,7 +279,24 @@ export function render(state: GameState, onChange: () => void): void {
 
     const amountToAdd = new Decimal(input.value);
     state.lifepoints = state.lifepoints.add(amountToAdd);
-    input.value = ''; 
+    input.value = '';
     onChange();
   });
+
+  document.querySelector<HTMLButtonElement>('#unlock-world-button')?.addEventListener('click', () => {
+    worldUnlocked = !worldUnlocked;
+    onChange();
+  });
+
+  if (worldUnlocked) {
+    document.querySelector<HTMLDivElement>('.world')!.addEventListener(
+      'wheel',
+      (event) => {
+        event.preventDefault();
+        zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel - event.deltaY * ZOOM_STEP));
+        document.querySelector<HTMLDivElement>('.world')!.style.transform = `scale(${zoomLevel})`;
+      },
+      { passive: false }
+    );
+  }
 }
