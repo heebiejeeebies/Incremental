@@ -30,6 +30,11 @@ export interface Fruit {
   typeName: string; // rotation
 }
 
+export interface Poop {
+  x: number; 
+  y: number; 
+}
+
 export interface GameState {
   loops: number;
   lifepoints: Decimal;
@@ -43,6 +48,7 @@ export interface GameState {
   dinosaurslot: Dinosaur[];
   dinomaxslots: number;
   activeDinosaur: ActiveDinosaur | null;
+  poop: Poop[];
   extinction: Extinction;
 }
 
@@ -58,17 +64,12 @@ export interface Dinosaur {
   name: string,
   phase: dinosaurphase,
   modifier: string,
-  ticks: number
+  ticks: number,
+  x: number,
+  y: number,
 }
 
-// The dinosaur currently spawned on screen, waiting to be clicked/recruited
-// (as opposed to Dinosaur entries in dinosaurslot, which are already
-// recruited and don't need a screen position). x/y (where it settles to vibe)
-// and entryX/entryY (where it wanders in from, off-screen) are all
-// percentages of the world container, same convention as leaves/fruit.
 export interface ActiveDinosaur extends Dinosaur {
-  x: number;
-  y: number;
   entryX: number;
   entryY: number;
 }
@@ -93,6 +94,7 @@ export function defaultState(): GameState {
     dinosaurslot: [],
     dinomaxslots: 1,
     activeDinosaur: null,
+    poop: [],
     extinction: Extinction.ALIVE,
   };
 }
@@ -105,11 +107,6 @@ function loadState(): GameState {
   // ensures nothings null. prolly works
   const merged = { ...defaultState(), ...JSON.parse(raw) } as GameState;
 
-  // Decimal serializes to a plain string via JSON.stringify, and JSON.parse
-  // just hands that string back -- it does NOT revive a real Decimal
-  // instance. Without re-wrapping these here, every field below would be a
-  // string/number by the time it reaches render()/tick logic, which call
-  // Decimal-only methods like .floor()/.lessThan()/.add() on them and crash.
   merged.lifepoints = new Decimal(merged.lifepoints);
   merged.will = new Decimal(merged.will);
   merged.upgrades = {

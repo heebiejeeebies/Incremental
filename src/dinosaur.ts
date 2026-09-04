@@ -1,4 +1,4 @@
-import { Dinosaur, GameState } from "./main";
+import { Dinosaur, GameState, Poop } from "./main";
 
 export enum dinosaurphase {
     STRUTTING,
@@ -23,22 +23,46 @@ const DINOSAUR_COSTS: Record<string, number> = {
   bevisaur: 2000,
 };
 
+const DINOSAUR_SPAWN_WEIGHTS: Record<string, number> = {
+  triceratops: 20,
+  stegosaur: 20,
+  brontosaur: 20,
+  pteranadon: 20,
+  trex: 10,
+  bevisaur: 10,
+};
+
+export const GROUND_ELEVATION_Y = 80;
+
+// Where recruited dinosaurs park their asses, near the tree.
+export const DINOSAUR_PARK_BASE_X = 55;
+export const DINOSAUR_PARK_Y = 70;
+const DINOSAUR_PARK_SPACING_X = 8;
+
 export function buyDinosaur(state: GameState, dinosaur: Dinosaur) {
+  const parkIndex = Math.min(state.dinosaurslot.length, state.dinomaxslots - 1);
+  const parkedDinosaur: Dinosaur = {
+    name: dinosaur.name,
+    phase: dinosaurphase.RECRUITED,
+    modifier: dinosaur.modifier,
+    ticks: 0,
+    x: DINOSAUR_PARK_BASE_X + parkIndex * DINOSAUR_PARK_SPACING_X,
+    y: DINOSAUR_PARK_Y,
+  };
+
   if (state.dinosaurslot.length < state.dinomaxslots) {
-    state.dinosaurslot.push(dinosaur);
+    state.dinosaurslot.push(parkedDinosaur);
   } else {
     for (let i = 0; i < state.dinomaxslots - 1; i++) {
         state.dinosaurslot[i] = state.dinosaurslot[i + 1];
     }
 
-    state.dinosaurslot[state.dinomaxslots - 1] = dinosaur;
+    state.dinosaurslot[state.dinomaxslots - 1] = parkedDinosaur;
   }
 
   const cost = DINOSAUR_COSTS[dinosaur.name] ?? 0;
   state.lifepoints = state.lifepoints.minus(cost);
 }
-
-export const GROUND_ELEVATION_Y = 80;
 
 export function trySpawnDinosaur(state: GameState): void {
   if (state.activeDinosaur !== null) return;
@@ -48,7 +72,7 @@ export function trySpawnDinosaur(state: GameState): void {
   const entry = randomEdgePosition();
   state.activeDinosaur = {
     ...dinosaur,
-    x: 10 + Math.random() * 80, 
+    x: 10 + Math.random() * 80, // where it settles once it's done wandering in
     y: GROUND_ELEVATION_Y,
     entryX: entry.x,
     entryY: entry.y,
@@ -73,56 +97,29 @@ export function recruitActiveDinosaur(state: GameState): boolean {
 }
 
 export function generateRandomDinosaur(): Dinosaur {
-    let rand = Math.floor(Math.random() * 100);
-    let modifier_rand = Math.floor(Math.random() * 100);
-    let mod_type = "none";
-    if (modifier_rand < MODIFIER_CHANCE) {
-        mod_type = "something"  // add more modifiers if they wanna
+    const modifier_rand = Math.floor(Math.random() * 100);
+    const mod_type = modifier_rand < MODIFIER_CHANCE ? "something" : "none"; // add more modifiers if they wanna
+
+    const names = Object.keys(DINOSAUR_SPAWN_WEIGHTS);
+    const totalWeight = names.reduce((sum, name) => sum + DINOSAUR_SPAWN_WEIGHTS[name], 0);
+    let roll = Math.random() * totalWeight;
+    let chosenName = names[names.length - 1];
+    for (const name of names) {
+        if (roll < DINOSAUR_SPAWN_WEIGHTS[name]) {
+            chosenName = name;
+            break;
+        }
+        roll -= DINOSAUR_SPAWN_WEIGHTS[name];
     }
 
-    if (rand < 20) {
-        return {
-            name: "triceratops",
-            phase: dinosaurphase.STRUTTING,
-            modifier: mod_type,
-            ticks: 0
-        }
-    } else if (rand < 40) {
-        return {
-            name: "stegosaur",
-            phase: dinosaurphase.STRUTTING,
-            modifier: mod_type,
-            ticks: 0
-        }
-    } else if (rand < 60) {
-        return {
-            name: "brontosaur",
-            phase: dinosaurphase.STRUTTING,
-            modifier: mod_type,
-            ticks: 0
-        }
-    } else if (rand < 80) {
-        return {
-            name: "pteranadon",
-            phase: dinosaurphase.STRUTTING,
-            modifier: mod_type,
-            ticks: 0
-        }
-    } else if (rand < 90) {
-        return {
-            name: "trex",
-            phase: dinosaurphase.STRUTTING,
-            modifier: mod_type,
-            ticks: 0
-        }
-    } else {
-        return {
-            name: "bevisaur",
-            phase: dinosaurphase.STRUTTING,
-            modifier: mod_type,
-            ticks: 0
-        }
-    }
+    return {
+        name: chosenName,
+        phase: dinosaurphase.STRUTTING,
+        modifier: mod_type,
+        ticks: 0,
+        x: 0, 
+        y: 0,
+    };
 }
 
 export function sellDinosaur(state: GameState, dinosaur: Dinosaur) {
@@ -157,4 +154,36 @@ export function tickDinosaur(dinosaur: Dinosaur): boolean {
         return dinosaur.ticks >= TIME_FOR_DINO_PATIENCE + LEAVE_DURATION_TICKS;
     }
     return false;
+}
+
+const POOP_CHANCE_SCALE = 1;
+function poopChanceFor(name: string): number {
+  const weight = DINOSAUR_SPAWN_WEIGHTS[name] ?? 20;
+  return POOP_CHANCE_SCALE / weight;
+}
+
+const POOP_DROP_SPEED = 4; 
+const POOP_SPAWN_OFFSET_Y = 6; 
+
+export function tickPoop(state: GameState): void {
+  for (const dinosaur of state.dinosaurslot) {
+    if (Math.random() < poopChanceFor(dinosaur.name)) {
+      const poop: Poop = { x: dinosaur.x, y: dinosaur.y + POOP_SPAWN_OFFSET_Y };
+      state.poop.push(poop);
+    }
+  }
+
+  for (const poop of state.poop) {
+    poop.y += POOP_DROP_SPEED;
+  }
+  state.poop = state.poop.filter((poop) => poop.y <= 100);
+}
+
+export const POOP_VALUE = 25;
+
+export function collectPoop(state: GameState, poop: Poop): void {
+  const index = state.poop.indexOf(poop);
+  if (index === -1) return;
+  state.poop.splice(index, 1);
+  state.lifepoints = state.lifepoints.add(POOP_VALUE);
 }

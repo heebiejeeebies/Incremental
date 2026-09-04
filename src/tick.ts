@@ -2,7 +2,7 @@ import { GameState, Extinction, defaultState } from "./main"
 import { tickMeteor } from "./meteor"
 import { randomLeaf } from "./purchases"
 import {peep, dequeue} from "./buffqueue"
-import { tickDinosaur, trySpawnDinosaur } from "./dinosaur"
+import { tickDinosaur, trySpawnDinosaur, tickPoop } from "./dinosaur"
 import Decimal from "break_eternity.js"
 
 // time moving
@@ -40,6 +40,8 @@ export function countUp(state: GameState) {
   } else {
     trySpawnDinosaur(state);
   }
+
+  tickPoop(state);
 
   if (tickMeteor()) {
     state.extinction = Extinction.ASTEROID;
