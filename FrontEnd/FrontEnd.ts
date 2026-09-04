@@ -20,24 +20,15 @@ import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
-// The world starts locked to exactly one screen (no scroll possible at all --
-// there's nothing to scroll to). Once unlocked, it expands to this larger
-// fixed size and becomes scrollable/zoomable. There's no real trigger for
-// this yet, so it's just a manual flag for now (see the "Unlock World" cheat
-// button below) -- wire up a real condition once one exists.
 const EXPANDED_WORLD_WIDTH = 4000;
 const EXPANDED_WORLD_HEIGHT = 2000;
 let worldUnlocked = false;
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2;
-const ZOOM_STEP = 0.0015; // multiplied by wheel deltaY per event
+const ZOOM_STEP = 0.0015; 
 let zoomLevel = 1;
 
-// Ground is stretched (aspect ratio ignored, on purpose) to exactly cover one
-// screen's worth of the world, computed once from the viewport at load --
-// same fixed-pixel-not-vw approach as everywhere else, so it doesn't drift
-// out of sync with the rest of the world on browser zoom/resize.
 const GROUND_WIDTH = window.innerWidth;
 const GROUND_HEIGHT = window.innerHeight;
 
@@ -48,9 +39,6 @@ const SUN_POSITION = {
   y: SUN_MARGIN + SUN_SIZE / 2,
 };
 
-// The tree just needs to sit clear of the controls panel (anchored at
-// CONTROLS_POSITION, top-left), not dodge a full-width overlay anymore, so
-// this no longer needs to be measured/corrected after the fact.
 const TREE_POSITION = {
   x: window.innerWidth / 2,
   y: window.innerHeight / 2 + 120,
@@ -58,9 +46,6 @@ const TREE_POSITION = {
 const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 650 };
 
-// Controls (buttons, counters) and the stats panel are just regular objects
-// positioned on the canvas now, not a fixed screen overlay -- they scroll
-// away with the rest of the world like everything else.
 const CONTROLS_WIDTH = 300;
 const CONTROLS_POSITION = { x: 40, y: 40 };
 const STATS_PANEL_POSITION = { x: CONTROLS_POSITION.x + CONTROLS_WIDTH + 20, y: CONTROLS_POSITION.y };
@@ -161,8 +146,6 @@ export function render(state: GameState, onChange: () => void): void {
   const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
   const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
 
-  // Locked: exactly one screen, nothing to scroll to. Unlocked: the larger
-  // fixed size, scrollable and zoomable via the wheel listener below.
   const worldWidth = worldUnlocked ? EXPANDED_WORLD_WIDTH : window.innerWidth;
   const worldHeight = worldUnlocked ? EXPANDED_WORLD_HEIGHT : window.innerHeight;
   document.body.style.overflow = worldUnlocked ? 'auto' : 'hidden';

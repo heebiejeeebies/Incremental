@@ -78,12 +78,6 @@ function loadState(): GameState {
   }
   // ensures nothings null. prolly works
   const merged = { ...defaultState(), ...JSON.parse(raw) } as GameState;
-
-  // Decimal serializes to a plain string via JSON.stringify, and JSON.parse
-  // just hands that string back -- it does NOT revive a real Decimal
-  // instance. Without re-wrapping these here, every field below would be a
-  // string/number by the time it reaches render()/tick logic, which call
-  // Decimal-only methods like .floor()/.lessThan()/.add() on them and crash.
   merged.lifepoints = new Decimal(merged.lifepoints);
   merged.will = new Decimal(merged.will);
   merged.upgrades = {
