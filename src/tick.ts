@@ -2,6 +2,7 @@ import { GameState, Extinction, defaultState } from "./main"
 import { tickMeteor } from "./meteor"
 import { randomLeaf } from "./purchases"
 import {peep, dequeue} from "./buffqueue"
+import Decimal from "break_eternity.js"
 
 // time moving
 export function countUp(state: GameState) {
@@ -9,9 +10,10 @@ export function countUp(state: GameState) {
   state.tickCounter = (state.tickCounter + state.tickRate) % 500;
 
   // every second add a point for each leaf (including multipliers)
-  if (state.tickCounter % 2 === 0) {
-    const totalLeaves = state.upgrades.leaf.div(5);
-    let increase = totalLeaves.mul(state.upgrades.photosynthesis);
+  if (state.tickCounter % 1 === 0) {
+    const totalLeaves = state.upgrades.leaf;
+    const photosynthBase = new Decimal(1.05);
+    let increase = totalLeaves.mul(photosynthBase.pow(state.upgrades.photosynthesis));
     const activeBuff = peep(state.buffsqueue);
     if (activeBuff === "leaf" || activeBuff === "will&leaf") {
       increase = increase.mul(2);
@@ -19,12 +21,13 @@ export function countUp(state: GameState) {
     state.lifepoints = state.lifepoints.add(increase);
   }
 
-  // every 3 (for testing purpses) seconds add 5 leaves for each aura farm
+  // every 3 (for testing purpses) seconds add a leaf for each aura farm
   if (state.tickCounter % 3 === 0) {
     const totalAuraFarms = state.upgrades.aurafarm;
-    for (let i = 0; totalAuraFarms.mul(5).greaterThan(i); i++) {
+    for (let i = 0; (totalAuraFarms.mul(5)).greaterThan(i); i++) {
       state.leaves.push(randomLeaf());
     }
+    state.upgrades.leaf = state.upgrades.leaf.add(totalAuraFarms);
   }
   
   tickBuffs(state);

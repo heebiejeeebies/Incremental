@@ -7,7 +7,7 @@ export const FRUIT_BUFF_DURATION = 60;
 
 
 export function buyFruit(state: GameState): boolean {
-  let fruit_cost = getCost(state, 'FRUIT');
+  const fruit_cost = getCost(state, 'FRUIT');
 
   if (state.lifepoints.lessThan(fruit_cost)) return false;
   state.lifepoints = state.lifepoints.minus(fruit_cost);
@@ -79,13 +79,14 @@ export function randomLeaf(): Leaf {
 }
 
 export function buyLeaf(state: GameState): boolean {
-  let leafCost = getCost(state, 'LEAF');
+  const leafCost = getCost(state, 'LEAF');
 
   if (state.lifepoints.lessThan(leafCost)) return false;
   state.lifepoints = state.lifepoints.minus(leafCost);
   for (let i = 0; i < 5; i++) {
     state.leaves.push(randomLeaf());
   }
+  state.upgrades.leaf = state.upgrades.leaf.add(1);
   return true;
 }
 
@@ -94,23 +95,25 @@ export function clearLeaves(state: GameState): void {
 }
 
 export function buyClickIncrease(state: GameState) {
-  if (!state) return;
-  let clickIncreaseCost = getCost(state, 'CLICKINCREASE');
+  if (!state) return false;
+  const clickIncreaseCost = getCost(state, 'CLICKINCREASE');
 
   if (state.lifepoints.lessThan(clickIncreaseCost)) return false;
   state.lifepoints = state.lifepoints.minus(clickIncreaseCost);
 
   state.upgrades.clickIncrease = state.upgrades.clickIncrease.add(1);
+  return true;
 }
 
 export function buyPhotosynthesis(state: GameState) {
-  if (!state) return;
-  let photosynthesisCost = getCost(state, 'PHOTOSYNTHESIS');
+  if (!state) return false;
+  const photosynthesisCost = getCost(state, 'PHOTOSYNTHESIS');
 
   if (state.lifepoints.lessThan(photosynthesisCost)) return false;
   state.lifepoints = state.lifepoints.minus(photosynthesisCost);
 
   state.upgrades.photosynthesis = state.upgrades.photosynthesis.add(1);
+  return true;
 }
 
 export function buyAuraFarm(state: GameState) {
@@ -125,7 +128,7 @@ export function buyAuraFarm(state: GameState) {
 
 function getCost(state: GameState, upgrade: string): Decimal {
   // checks if you have X amount of Y upgrade, and then returns the cost of it
-  // as in it looks at how many upgrade stacks you got of the given upgrade and retuirns the cost base off that
+  // as in it looks at how many upgrade stacks you got of the given upgrade and returns the cost base off that
   if (upgrade === 'LEAF') {
     return costLeaf(state.upgrades.leaf);
   } else if (upgrade === 'CLICKINCREASE') {
@@ -137,6 +140,6 @@ function getCost(state: GameState, upgrade: string): Decimal {
   } else if (upgrade === 'AURAFARM') {
     return costAurafarm(state.upgrades.aurafarm);
   }
-  // Placeholder cost
+  // placeholder cost
   return new Decimal(0);
 }

@@ -1,6 +1,6 @@
 import type { GameState } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
-import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit } from '../src/purchases.js'
+import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
 import dino_background from './assets/background.png'
 import tree_image from './assets/treewow.png'
@@ -14,8 +14,8 @@ import antony_image from './assets/antony.png'
 import ethan_image from './assets/ethan.png'
 import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
-import {costFruit, costLeaf} from '../src/growth.js';
-// import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
+import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
+import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -31,6 +31,8 @@ const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 500 };
 
 const BACKGROUND_WIDTH = window.innerWidth;
+
+let showStats = false;
 
 function renderLeaves(state: GameState): string {
   return state.leaves
@@ -100,6 +102,14 @@ function updateMeteor(): void {
   meteorContainer.style.top = `${target.y}px`;
 }
 
+const cheat = document.createElement('div');
+cheat.innerHTML = `
+  <input type="text" id="cheat" placeholder="get bajillion LP" style= "pointer-events: auto; cursor: text;" />
+  <button id="cheat-button">Add LP</button>
+`;
+document.body.appendChild(cheat);
+
+
 function renderExplosion(): string {
   if (getMeteorPhase() !== MeteorPhase.EXPLODING) return '';
   return `<img src="${explosion_image}" alt="Explosion" class="explosion-image" />`;
@@ -113,9 +123,9 @@ function renderGameOver(): string {
 export function render(state: GameState, onChange: () => void): void {
   const leafCost = costLeaf(state.upgrades.leaf);
   const fruitCost = costFruit(state.fruit.length);
-  // const photosynthesisCost = costPhotoSynthesis(state.upgrades.photosynthesis);
-  // const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
-  // const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
+  const photosynthesisCost = costPhotoSynthesis(state.upgrades.photosynthesis);
+  const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
+  const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
 
   app.innerHTML = `
     <div class="world" style="width: ${WORLD_WIDTH}px; height: ${WORLD_HEIGHT}px; background-image: url(${dino_background}); background-size: ${BACKGROUND_WIDTH}px auto;">
@@ -131,20 +141,39 @@ export function render(state: GameState, onChange: () => void): void {
     </div>
     <div class="hud">
       <h1>Incremental</h1>
-      <p>lifepoints: <span id="count">${state.lifepoints.floor().toString}</span></p>
+      <p>lifepoints: <span id="count">${state.lifepoints.floor().toString()}</span></p>
       <p>loops: ${state.loops}</p>
       ${renderActiveBuff(state)}
-      <button id="buy-leaf" ${state.lifepoints < leafCost ? 'disabled' : ''}>
+      <button id="buy-leaf" ${state.lifepoints.lessThan(leafCost) ? 'disabled' : ''}>
         Buy Leaf (${leafCost} lifepoints)
       </button>
-      <button id="buy-aurafarm" ${state.lifepoints.lessThan(100) ? 'disabled' : ''}>
-        Buy Aurafarm (100 lifepoints)
-      </button>
       <button id="clear-leaves">Clear Leaves</button>
-      <button id="buy-fruit" ${state.lifepoints < fruitCost ? 'disabled' : ''}>
+       <button id="buy-click-increase" ${state.lifepoints.lessThan(clickIncreaseCost) ? 'disabled' : ''}>
+        Buy Click Increase (${clickIncreaseCost} lifepoints)
+      </button>
+      <button id="buy-aurafarm" ${state.lifepoints.lessThan(aurafarmCost) ? 'disabled' : ''}>
+        Buy Aurafarm (${aurafarmCost} lifepoints)
+      </button>
+      <button id="buy-photosynthesis" ${state.lifepoints.lessThan(photosynthesisCost) ? 'disabled' : ''}>
+        Buy Photosynthesis (${photosynthesisCost} lifepoints)
+      </button>
+      <button id="buy-fruit" ${state.lifepoints.lessThan(fruitCost) ? 'disabled' : ''}>
         Buy Fruit (${fruitCost} lifepoints)
       </button>
       <button id="clear-fruit">Clear Fruit</button>
+      <button id="toggle-stats">
+        ${showStats ? 'Hide Stats' : 'Show Stats'}
+      </button>
+      ${showStats ? `
+        <div class="stats-panel">
+          <p> WILL: ${state.will}</p>
+          <p> Click Increases: ${state.upgrades.clickIncrease}</p>
+          <p> Leaves: ${state.upgrades.leaf.toString()}</p>
+          <p> Fruits: ${state.fruit.length}</p>
+          <p> Aurafarms: ${state.upgrades.aurafarm.toString()}</p>
+          <p> Photosynthesis: ${state.upgrades.photosynthesis.toString()}</p>
+        </div>
+      ` : ''}
     </div>
     ${renderGameOver()}
   `;
@@ -172,6 +201,19 @@ export function render(state: GameState, onChange: () => void): void {
       onChange();
     }
   });
+
+  document.querySelector<HTMLButtonElement>('#buy-photosynthesis')!.addEventListener('click', () => {
+    if (buyPhotosynthesis(state)) {
+      onChange();
+    }
+  });
+
+  document.querySelector<HTMLButtonElement>('#buy-click-increase')!.addEventListener('click', () => {
+    if (buyClickIncrease(state)) {
+      onChange();
+    }
+  });
+
   document.querySelector<HTMLButtonElement>('#buy-fruit')!.addEventListener('click', () => {
     if (buyFruit(state)) {
       onChange();
@@ -180,6 +222,21 @@ export function render(state: GameState, onChange: () => void): void {
 
   document.querySelector<HTMLButtonElement>('#clear-fruit')!.addEventListener('click', () => {
     clearFruit(state);
+    onChange();
+  });
+
+  document.querySelector<HTMLButtonElement>('#toggle-stats')?.addEventListener('click', () => {
+    showStats = !showStats;
+    onChange();
+  });
+
+  document.querySelector<HTMLButtonElement>('#cheat-button')?.addEventListener('click', () => {
+    const input = document.querySelector<HTMLInputElement>('#cheat');
+    if (!input) return;
+
+    const amountToAdd = new Decimal(input.value);
+    state.lifepoints = state.lifepoints.add(amountToAdd);
+    input.value = ''; 
     onChange();
   });
 }

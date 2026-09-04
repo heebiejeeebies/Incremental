@@ -58,7 +58,7 @@ export function defaultState(): GameState {
     upgrades: {
       clickIncrease: new Decimal(0),
       leaf: new Decimal(0),
-      photosynthesis: new Decimal(1), // life point per leaf/s
+      photosynthesis: new Decimal(0), // life point per leaf/s
       aurafarm: new Decimal(0)
       // add more upgrades
     },
