@@ -1,6 +1,7 @@
 import { countUp, checkExtinctions } from "./tick";
 import { render } from "../FrontEnd/FrontEnd.js";
 import Decimal from "break_eternity.js";
+import { dinosaurphase } from "./dinosaur";
 
 const SAVE_KEY = 'incremental-save';
 const TICK_INTERVAL_MS = 1000;
@@ -39,6 +40,9 @@ export interface GameState {
   buffsqueue: Buff[];
   tickCounter: number;
   tickRate: number;
+  dinosaurslot: Dinosaur[];
+  dinomaxslots: number;
+  activeDinosaur: ActiveDinosaur | null;
   extinction: Extinction;
 }
 
@@ -48,6 +52,25 @@ export interface Upgrades {
   photosynthesis: Decimal,
   aurafarm: Decimal
   // add other upgrades which could be objects that contain other special fields
+}
+
+export interface Dinosaur {
+  name: string,
+  phase: dinosaurphase,
+  modifier: string,
+  ticks: number
+}
+
+// The dinosaur currently spawned on screen, waiting to be clicked/recruited
+// (as opposed to Dinosaur entries in dinosaurslot, which are already
+// recruited and don't need a screen position). x/y (where it settles to vibe)
+// and entryX/entryY (where it wanders in from, off-screen) are all
+// percentages of the world container, same convention as leaves/fruit.
+export interface ActiveDinosaur extends Dinosaur {
+  x: number;
+  y: number;
+  entryX: number;
+  entryY: number;
 }
 
 export function defaultState(): GameState {
@@ -67,6 +90,9 @@ export function defaultState(): GameState {
     fruit: [],
     tickCounter: 0,
     tickRate: 1,
+    dinosaurslot: [],
+    dinomaxslots: 1,
+    activeDinosaur: null,
     extinction: Extinction.ALIVE,
   };
 }

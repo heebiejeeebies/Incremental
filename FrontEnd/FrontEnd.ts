@@ -16,28 +16,25 @@ import ethan_image from './assets/ethan.png'
 import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
 import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
+import { recruitActiveDinosaur, sellDinosaurAt, dinosaurphase } from '../src/dinosaur.js';
+import trike_image from './assets/trike.png'
+import steg_image from './assets/steg.png'
+import bront_image from './assets/bront.png'
+import ptera_image from './assets/ptera.png'
+import rex_image from './assets/rex.png'
 import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
-// The world starts locked to exactly one screen (no scroll possible at all --
-// there's nothing to scroll to). Once unlocked, it expands to this larger
-// fixed size and becomes scrollable/zoomable. There's no real trigger for
-// this yet, so it's just a manual flag for now (see the "Unlock World" cheat
-// button below) -- wire up a real condition once one exists.
 const EXPANDED_WORLD_WIDTH = 4000;
 const EXPANDED_WORLD_HEIGHT = 2000;
 let worldUnlocked = false;
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2;
-const ZOOM_STEP = 0.0015; // multiplied by wheel deltaY per event
+const ZOOM_STEP = 0.0015; 
 let zoomLevel = 1;
 
-// Ground is stretched (aspect ratio ignored, on purpose) to exactly cover one
-// screen's worth of the world, computed once from the viewport at load --
-// same fixed-pixel-not-vw approach as everywhere else, so it doesn't drift
-// out of sync with the rest of the world on browser zoom/resize.
 const GROUND_WIDTH = window.innerWidth;
 const GROUND_HEIGHT = window.innerHeight;
 
@@ -48,9 +45,6 @@ const SUN_POSITION = {
   y: SUN_MARGIN + SUN_SIZE / 2,
 };
 
-// The tree just needs to sit clear of the controls panel (anchored at
-// CONTROLS_POSITION, top-left), not dodge a full-width overlay anymore, so
-// this no longer needs to be measured/corrected after the fact.
 const TREE_POSITION = {
   x: window.innerWidth / 2,
   y: window.innerHeight / 2 + 120,
@@ -58,9 +52,6 @@ const TREE_POSITION = {
 const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 650 };
 
-// Controls (buttons, counters) and the stats panel are just regular objects
-// positioned on the canvas now, not a fixed screen overlay -- they scroll
-// away with the rest of the world like everything else.
 const CONTROLS_WIDTH = 300;
 const CONTROLS_POSITION = { x: 40, y: 40 };
 const STATS_PANEL_POSITION = { x: CONTROLS_POSITION.x + CONTROLS_WIDTH + 20, y: CONTROLS_POSITION.y };
@@ -90,6 +81,88 @@ function renderFruit(state: GameState): string {
       (fruit) =>
         `<img src="${FRUIT_IMAGES[fruit.typeName]}" alt="${fruit.typeName}" class="fruit-image" style="left: ${fruit.x}%; top: ${fruit.y}%;" />`
     )
+    .join('');
+}
+
+const DINOSAUR_IMAGES: Record<string, string> = {
+  triceratops: trike_image,
+  stegosaur: steg_image,
+  brontosaur: bront_image,
+  pteranadon: ptera_image,
+  trex: rex_image,
+  bevisaur: bevis,
+};
+
+const dinosaurContainer = document.createElement('button');
+dinosaurContainer.className = 'dinosaur-button';
+dinosaurContainer.innerHTML = `<img alt="Dinosaur" />`;
+document.body.appendChild(dinosaurContainer);
+const dinosaurImg = dinosaurContainer.querySelector<HTMLImageElement>('img')!;
+
+let lastSeenActiveDinosaur: GameState['activeDinosaur'] = null;
+
+function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight: number): void {
+  const dinosaur = state.activeDinosaur;
+
+  if (!dinosaur) {
+    dinosaurContainer.style.display = 'none';
+    lastSeenActiveDinosaur = null;
+    return;
+  }
+
+  dinosaurContainer.style.display = '';
+  dinosaurImg.src = DINOSAUR_IMAGES[dinosaur.name];
+  dinosaurContainer.style.opacity = dinosaur.phase === dinosaurphase.LEAVING ? '0.3' : '1';
+
+  const restLeft = (dinosaur.x / 100) * worldWidth;
+  const restTop = (dinosaur.y / 100) * worldHeight;
+
+  if (dinosaur !== lastSeenActiveDinosaur) {
+    lastSeenActiveDinosaur = dinosaur;
+    const entryLeft = (dinosaur.entryX / 100) * worldWidth;
+    const entryTop = (dinosaur.entryY / 100) * worldHeight;
+    dinosaurContainer.style.transition = 'none';
+    dinosaurContainer.style.left = `${entryLeft}px`;
+    dinosaurContainer.style.top = `${entryTop}px`;
+    void dinosaurContainer.offsetWidth; 
+    dinosaurContainer.style.transition = 'left 3s linear, top 3s linear, opacity 1s linear';
+  }
+
+  dinosaurContainer.style.left = `${restLeft}px`;
+  dinosaurContainer.style.top = `${restTop}px`;
+}
+
+let dinosaurClickListenerAttached = false;
+function attachDinosaurClickListenerOnce(state: GameState, onChange: () => void): void {
+  if (dinosaurClickListenerAttached) return;
+  dinosaurClickListenerAttached = true;
+  dinosaurContainer.addEventListener('click', () => {
+    recruitActiveDinosaur(state);
+    onChange();
+  });
+}
+
+let selectedDinosaurIndex: number | null = null;
+const DINOSAUR_PARK_SPACING = 100;
+
+function renderDinosaurRoster(state: GameState): string {
+  return state.dinosaurslot
+    .map((dinosaur, index) => {
+      const x = TREE_POSITION.x + 150 + index * DINOSAUR_PARK_SPACING;
+      const y = TREE_POSITION.y + 150;
+      const sellPopup =
+        selectedDinosaurIndex === index
+          ? `<button class="sell-dinosaur-button" data-dino-index="${index}">Sell ${dinosaur.name}</button>`
+          : '';
+      return `
+        <div class="parked-dinosaur" style="left: ${x}px; top: ${y}px;">
+          <button class="parked-dinosaur-button" data-dino-index="${index}">
+            <img src="${DINOSAUR_IMAGES[dinosaur.name]}" alt="${dinosaur.name}" />
+          </button>
+          ${sellPopup}
+        </div>
+      `;
+    })
     .join('');
 }
 
@@ -161,8 +234,6 @@ export function render(state: GameState, onChange: () => void): void {
   const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
   const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
 
-  // Locked: exactly one screen, nothing to scroll to. Unlocked: the larger
-  // fixed size, scrollable and zoomable via the wheel listener below.
   const worldWidth = worldUnlocked ? EXPANDED_WORLD_WIDTH : window.innerWidth;
   const worldHeight = worldUnlocked ? EXPANDED_WORLD_HEIGHT : window.innerHeight;
   document.body.style.overflow = worldUnlocked ? 'auto' : 'hidden';
@@ -181,6 +252,7 @@ export function render(state: GameState, onChange: () => void): void {
         ${renderFruit(state)}
         ${renderExplosion()}
       </div>
+      ${renderDinosaurRoster(state)}
       <div class="controls" style="left: ${CONTROLS_POSITION.x}px; top: ${CONTROLS_POSITION.y}px; width: ${CONTROLS_WIDTH}px;">
         <h1>Incremental</h1>
         <p>lifepoints: <span id="count">${state.lifepoints.floor().toString()}</span></p>
@@ -222,6 +294,8 @@ export function render(state: GameState, onChange: () => void): void {
   `;
 
   updateMeteor();
+  updateActiveDinosaur(state, worldWidth, worldHeight);
+  attachDinosaurClickListenerOnce(state, onChange);
 
   document.querySelector<HTMLButtonElement>('#tree')!.addEventListener('click', () => {
     clickTree(state);
@@ -286,6 +360,24 @@ export function render(state: GameState, onChange: () => void): void {
   document.querySelector<HTMLButtonElement>('#unlock-world-button')?.addEventListener('click', () => {
     worldUnlocked = !worldUnlocked;
     onChange();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.parked-dinosaur-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.dinoIndex);
+      selectedDinosaurIndex = selectedDinosaurIndex === index ? null : index;
+      onChange();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.sell-dinosaur-button').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const index = Number(button.dataset.dinoIndex);
+      sellDinosaurAt(state, index);
+      selectedDinosaurIndex = null;
+      onChange();
+    });
   });
 
   if (worldUnlocked) {
