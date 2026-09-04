@@ -1,4 +1,4 @@
-import type { GameState } from '../src/main.js';
+import type { GameState, Poop } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
 import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
@@ -16,6 +16,13 @@ import ethan_image from './assets/ethan.png'
 import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
 import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
+import { recruitActiveDinosaur, sellDinosaurAt, collectPoop, dinosaurphase } from '../src/dinosaur.js';
+import trike_image from './assets/trike.png'
+import steg_image from './assets/steg.png'
+import bront_image from './assets/bront.png'
+import ptera_image from './assets/ptera.png'
+import rex_image from './assets/rex.png'
+import poop_image from './assets/poop.png'
 import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -78,6 +85,133 @@ function renderFruit(state: GameState): string {
     .join('');
 }
 
+const DINOSAUR_IMAGES: Record<string, string> = {
+  triceratops: trike_image,
+  stegosaur: steg_image,
+  brontosaur: bront_image,
+  pteranadon: ptera_image,
+  trex: rex_image,
+  bevisaur: bevis,
+};
+
+const dinosaurContainer = document.createElement('button');
+dinosaurContainer.className = 'dinosaur-button';
+dinosaurContainer.innerHTML = `<img alt="Dinosaur" />`;
+document.body.appendChild(dinosaurContainer);
+const dinosaurImg = dinosaurContainer.querySelector<HTMLImageElement>('img')!;
+
+let lastSeenActiveDinosaur: GameState['activeDinosaur'] = null;
+
+function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight: number, zoomLevel: number): void {
+  const dinosaur = state.activeDinosaur;
+
+  if (!dinosaur) {
+    dinosaurContainer.style.display = 'none';
+    lastSeenActiveDinosaur = null;
+    return;
+  }
+
+  dinosaurContainer.style.display = '';
+  dinosaurImg.src = DINOSAUR_IMAGES[dinosaur.name];
+  dinosaurContainer.style.opacity = dinosaur.phase === dinosaurphase.LEAVING ? '0.3' : '1';
+  dinosaurContainer.style.transform = `translate(-50%, -50%) scale(${zoomLevel})`;
+
+  const restLeft = (dinosaur.x / 100) * worldWidth * zoomLevel;
+  const restTop = (dinosaur.y / 100) * worldHeight * zoomLevel;
+
+  if (dinosaur !== lastSeenActiveDinosaur) {
+    lastSeenActiveDinosaur = dinosaur;
+    const entryLeft = (dinosaur.entryX / 100) * worldWidth * zoomLevel;
+    const entryTop = (dinosaur.entryY / 100) * worldHeight * zoomLevel;
+    dinosaurContainer.style.transition = 'none';
+    dinosaurContainer.style.left = `${entryLeft}px`;
+    dinosaurContainer.style.top = `${entryTop}px`;
+    void dinosaurContainer.offsetWidth;
+    dinosaurContainer.style.transition = 'left 3s linear, top 3s linear, opacity 1s linear';
+  }
+
+  dinosaurContainer.style.left = `${restLeft}px`;
+  dinosaurContainer.style.top = `${restTop}px`;
+}
+
+let dinosaurClickListenerAttached = false;
+function attachDinosaurClickListenerOnce(state: GameState, onChange: () => void): void {
+  if (dinosaurClickListenerAttached) return;
+  dinosaurClickListenerAttached = true;
+  dinosaurContainer.addEventListener('click', () => {
+    recruitActiveDinosaur(state);
+    onChange();
+  });
+}
+
+let selectedDinosaurIndex: number | null = null;
+
+function renderDinosaurRoster(state: GameState): string {
+  return state.dinosaurslot
+    .map((dinosaur, index) => {
+      const sellPopup =
+        selectedDinosaurIndex === index
+          ? `<button class="sell-dinosaur-button" data-dino-index="${index}">Sell ${dinosaur.name}</button>`
+          : '';
+      return `
+        <div class="parked-dinosaur" style="left: ${dinosaur.x}%; top: ${dinosaur.y}%;">
+          <button class="parked-dinosaur-button" data-dino-index="${index}">
+            <img src="${DINOSAUR_IMAGES[dinosaur.name]}" alt="${dinosaur.name}" />
+          </button>
+          ${sellPopup}
+        </div>
+      `;
+    })
+    .join('');
+}
+
+const poopContainer = document.createElement('div');
+document.body.appendChild(poopContainer);
+const poopElements = new Map<Poop, HTMLImageElement>();
+
+function updatePoop(state: GameState, worldWidth: number, worldHeight: number, zoomLevel: number, onChange: () => void): void {
+  const currentPoop = new Set(state.poop);
+
+  for (const [poop, el] of poopElements) {
+    if (!currentPoop.has(poop)) {
+      el.remove();
+      poopElements.delete(poop);
+    }
+  }
+
+  for (const poop of state.poop) {
+    const left = (poop.x / 100) * worldWidth * zoomLevel;
+    const top = (poop.y / 100) * worldHeight * zoomLevel;
+    const transform = `translate(-50%, -50%) scale(${zoomLevel})`;
+
+    let el = poopElements.get(poop);
+    if (!el) {
+      el = document.createElement('img');
+      el.src = poop_image;
+      el.alt = 'Poop';
+      el.className = 'poop-image';
+
+      el.addEventListener('click', () => {
+        collectPoop(state, poop);
+        onChange();
+      });
+      poopContainer.appendChild(el);
+      poopElements.set(poop, el);
+
+      el.style.transition = 'none';
+      el.style.left = `${left}px`;
+      el.style.top = `${top}px`;
+      el.style.transform = transform;
+      void el.offsetWidth; 
+      el.style.transition = 'top 1s linear, left 1s linear';
+    }
+
+    el.style.transform = transform;
+    el.style.left = `${left}px`;
+    el.style.top = `${top}px`;
+  }
+}
+
 const BUFF_LABELS: Record<string, string> = {
   will: 'Click x2',
   leaf: 'Leaf x2',
@@ -100,7 +234,7 @@ meteorContainer.innerHTML = `
 document.body.appendChild(meteorContainer);
 const meteorFireImg = meteorContainer.querySelector<HTMLImageElement>('.fire-img')!;
 
-function updateMeteor(): void {
+function updateMeteor(zoomLevel: number): void {
   const phase = getMeteorPhase();
 
   if (phase === MeteorPhase.EXPLODING || phase === MeteorPhase.GAME_OVER) {
@@ -109,15 +243,16 @@ function updateMeteor(): void {
   }
 
   meteorContainer.style.display = '';
+  meteorContainer.style.transform = `translate(-50%, -50%) rotate(-45deg) scale(${zoomLevel})`;
   const sizeFraction = Math.min(getMeteorSize() / SIZE_FOR_BOOM, 1);
-  const pixelSize = 40 + sizeFraction * 120; 
+  const pixelSize = 40 + sizeFraction * 120;
   meteorContainer.style.width = `${pixelSize}px`;
   meteorContainer.style.height = `${pixelSize}px`;
   meteorFireImg.style.opacity = String(Math.min(getMeteorBurnedness() / SIZE_FOR_BOOM, 1));
 
   const target = phase === MeteorPhase.FLYING_TO_CENTER ? TREE_POSITION : METEOR_START_POSITION;
-  meteorContainer.style.left = `${target.x}px`;
-  meteorContainer.style.top = `${target.y}px`;
+  meteorContainer.style.left = `${target.x * zoomLevel}px`;
+  meteorContainer.style.top = `${target.y * zoomLevel}px`;
 }
 
 const cheat = document.createElement('div');
@@ -164,6 +299,7 @@ export function render(state: GameState, onChange: () => void): void {
         ${renderFruit(state)}
         ${renderExplosion()}
       </div>
+      ${renderDinosaurRoster(state)}
       <div class="controls" style="left: ${CONTROLS_POSITION.x}px; top: ${CONTROLS_POSITION.y}px; width: ${CONTROLS_WIDTH}px;">
         <h1>Incremental</h1>
         <p>lifepoints: <span id="count">${state.lifepoints.floor().toString()}</span></p>
@@ -204,7 +340,10 @@ export function render(state: GameState, onChange: () => void): void {
     ${renderGameOver()}
   `;
 
-  updateMeteor();
+  updateMeteor(zoomLevel);
+  updateActiveDinosaur(state, worldWidth, worldHeight, zoomLevel);
+  updatePoop(state, worldWidth, worldHeight, zoomLevel, onChange);
+  attachDinosaurClickListenerOnce(state, onChange);
 
   document.querySelector<HTMLButtonElement>('#tree')!.addEventListener('click', () => {
     clickTree(state);
@@ -271,6 +410,24 @@ export function render(state: GameState, onChange: () => void): void {
     onChange();
   });
 
+  document.querySelectorAll<HTMLButtonElement>('.parked-dinosaur-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.dataset.dinoIndex);
+      selectedDinosaurIndex = selectedDinosaurIndex === index ? null : index;
+      onChange();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.sell-dinosaur-button').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const index = Number(button.dataset.dinoIndex);
+      sellDinosaurAt(state, index);
+      selectedDinosaurIndex = null;
+      onChange();
+    });
+  });
+
   if (worldUnlocked) {
     document.querySelector<HTMLDivElement>('.world')!.addEventListener(
       'wheel',
@@ -278,6 +435,9 @@ export function render(state: GameState, onChange: () => void): void {
         event.preventDefault();
         zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel - event.deltaY * ZOOM_STEP));
         document.querySelector<HTMLDivElement>('.world')!.style.transform = `scale(${zoomLevel})`;
+        updateMeteor(zoomLevel);
+        updateActiveDinosaur(state, worldWidth, worldHeight, zoomLevel);
+        updatePoop(state, worldWidth, worldHeight, zoomLevel, onChange);
       },
       { passive: false }
     );

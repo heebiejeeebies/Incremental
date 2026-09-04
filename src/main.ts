@@ -1,6 +1,7 @@
 import { countUp, checkExtinctions } from "./tick";
 import { render } from "../FrontEnd/FrontEnd.js";
 import Decimal from "break_eternity.js";
+import { dinosaurphase } from "./dinosaur";
 
 const SAVE_KEY = 'incremental-save';
 const TICK_INTERVAL_MS = 1000;
@@ -29,6 +30,11 @@ export interface Fruit {
   typeName: string; // rotation
 }
 
+export interface Poop {
+  x: number; 
+  y: number; 
+}
+
 export interface GameState {
   loops: number;
   lifepoints: Decimal;
@@ -39,6 +45,10 @@ export interface GameState {
   buffsqueue: Buff[];
   tickCounter: number;
   tickRate: number;
+  dinosaurslot: Dinosaur[];
+  dinomaxslots: number;
+  activeDinosaur: ActiveDinosaur | null;
+  poop: Poop[];
   extinction: Extinction;
 }
 
@@ -48,6 +58,20 @@ export interface Upgrades {
   photosynthesis: Decimal,
   aurafarm: Decimal
   // add other upgrades which could be objects that contain other special fields
+}
+
+export interface Dinosaur {
+  name: string,
+  phase: dinosaurphase,
+  modifier: string,
+  ticks: number,
+  x: number,
+  y: number,
+}
+
+export interface ActiveDinosaur extends Dinosaur {
+  entryX: number;
+  entryY: number;
 }
 
 export function defaultState(): GameState {
@@ -67,6 +91,10 @@ export function defaultState(): GameState {
     fruit: [],
     tickCounter: 0,
     tickRate: 1,
+    dinosaurslot: [],
+    dinomaxslots: 1,
+    activeDinosaur: null,
+    poop: [],
     extinction: Extinction.ALIVE,
   };
 }
@@ -78,6 +106,7 @@ function loadState(): GameState {
   }
   // ensures nothings null. prolly works
   const merged = { ...defaultState(), ...JSON.parse(raw) } as GameState;
+
   merged.lifepoints = new Decimal(merged.lifepoints);
   merged.will = new Decimal(merged.will);
   merged.upgrades = {
