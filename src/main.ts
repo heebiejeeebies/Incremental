@@ -49,6 +49,7 @@ export interface GameState {
   dinomaxslots: number;
   activeDinosaur: ActiveDinosaur | null;
   poop: Poop[];
+  hasVenusTrap: boolean;
   extinction: Extinction;
 }
 
@@ -95,6 +96,7 @@ export function defaultState(): GameState {
     dinomaxslots: 1,
     activeDinosaur: null,
     poop: [],
+    hasVenusTrap: false,
     extinction: Extinction.ALIVE,
   };
 }

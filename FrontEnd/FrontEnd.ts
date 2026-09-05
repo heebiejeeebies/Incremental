@@ -17,12 +17,16 @@ import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
 import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
 import { recruitActiveDinosaur, sellDinosaurAt, collectPoop, dinosaurphase } from '../src/dinosaur.js';
+import { buyTrap, startDevour, getVenusPhase, VenusPhase, TRAP_COST, TRAP_UNLOCK_FRUIT } from '../src/venustrap.js';
 import trike_image from './assets/trike.png'
 import steg_image from './assets/steg.png'
 import bront_image from './assets/bront.png'
 import ptera_image from './assets/ptera.png'
 import rex_image from './assets/rex.png'
 import poop_image from './assets/poop.png'
+import dinomuncher_image from './assets/dinomuncher.png'
+import dinomuncheropen_image from './assets/dinomunchermouthopen.png'
+import dinomuncherlookingdown_image from './assets/dinomuncherlookingdown.png'
 import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -52,6 +56,9 @@ const TREE_POSITION = {
 };
 const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 650 };
+
+const VENUS_TRAP_POSITION = { x: 1175, y: 750 };
+const VENUS_TRAP_SIZE = 200;
 
 const CONTROLS_WIDTH = 300;
 const CONTROLS_POSITION = { x: 40, y: 40 };
@@ -101,6 +108,7 @@ document.body.appendChild(dinosaurContainer);
 const dinosaurImg = dinosaurContainer.querySelector<HTMLImageElement>('img')!;
 
 let lastSeenActiveDinosaur: GameState['activeDinosaur'] = null;
+let lastSeenActiveDinosaurPhase: dinosaurphase | null = null;
 
 function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight: number, zoomLevel: number): void {
   const dinosaur = state.activeDinosaur;
@@ -108,6 +116,7 @@ function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight:
   if (!dinosaur) {
     dinosaurContainer.style.display = 'none';
     lastSeenActiveDinosaur = null;
+    lastSeenActiveDinosaurPhase = null;
     return;
   }
 
@@ -120,7 +129,10 @@ function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight:
   const restTop = (dinosaur.y / 100) * worldHeight * zoomLevel;
 
   if (dinosaur !== lastSeenActiveDinosaur) {
+    // brand new spawn: snap to the entry point, then walk in to the rest
+    // position over the full 3s strut duration
     lastSeenActiveDinosaur = dinosaur;
+    lastSeenActiveDinosaurPhase = dinosaur.phase;
     const entryLeft = (dinosaur.entryX / 100) * worldWidth * zoomLevel;
     const entryTop = (dinosaur.entryY / 100) * worldHeight * zoomLevel;
     dinosaurContainer.style.transition = 'none';
@@ -128,6 +140,11 @@ function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight:
     dinosaurContainer.style.top = `${entryTop}px`;
     void dinosaurContainer.offsetWidth;
     dinosaurContainer.style.transition = 'left 3s linear, top 3s linear, opacity 1s linear';
+  } else if (dinosaur.phase !== lastSeenActiveDinosaurPhase) {
+    lastSeenActiveDinosaurPhase = dinosaur.phase;
+    if (dinosaur.phase === dinosaurphase.VIBING) {
+      dinosaurContainer.style.transition = 'left 1s linear, top 1s linear, opacity 1s linear';
+    }
   }
 
   dinosaurContainer.style.left = `${restLeft}px`;
@@ -149,9 +166,10 @@ let selectedDinosaurIndex: number | null = null;
 function renderDinosaurRoster(state: GameState): string {
   return state.dinosaurslot
     .map((dinosaur, index) => {
+      const label = state.hasVenusTrap ? `Devour ${dinosaur.name}` : `Sell ${dinosaur.name}`;
       const sellPopup =
         selectedDinosaurIndex === index
-          ? `<button class="sell-dinosaur-button" data-dino-index="${index}">Sell ${dinosaur.name}</button>`
+          ? `<button class="sell-dinosaur-button" data-dino-index="${index}">${label}</button>`
           : '';
       return `
         <div class="parked-dinosaur" style="left: ${dinosaur.x}%; top: ${dinosaur.y}%;">
@@ -264,6 +282,18 @@ cheat.innerHTML = `
 document.body.appendChild(cheat);
 
 
+const VENUS_TRAP_IMAGES: Record<VenusPhase, string> = {
+  [VenusPhase.IDLE]: dinomuncher_image,
+  [VenusPhase.OPENMOUTH]: dinomuncheropen_image,
+  [VenusPhase.LOOKINGDOWN]: dinomuncherlookingdown_image,
+};
+
+function renderVenusTrap(state: GameState): string {
+  if (!state.hasVenusTrap) return '';
+  const src = VENUS_TRAP_IMAGES[getVenusPhase()];
+  return `<img src="${src}" alt="Venus Trap" class="venus-trap-image" style="left: ${VENUS_TRAP_POSITION.x}px; top: ${VENUS_TRAP_POSITION.y}px; width: ${VENUS_TRAP_SIZE}px;" />`;
+}
+
 function renderExplosion(): string {
   if (getMeteorPhase() !== MeteorPhase.EXPLODING) return '';
   return `<img src="${explosion_image}" alt="Explosion" class="explosion-image" />`;
@@ -300,6 +330,7 @@ export function render(state: GameState, onChange: () => void): void {
         ${renderExplosion()}
       </div>
       ${renderDinosaurRoster(state)}
+      ${renderVenusTrap(state)}
       <div class="controls" style="left: ${CONTROLS_POSITION.x}px; top: ${CONTROLS_POSITION.y}px; width: ${CONTROLS_WIDTH}px;">
         <h1>Incremental</h1>
         <p>lifepoints: <span id="count">${state.lifepoints.floor().toString()}</span></p>
@@ -322,6 +353,11 @@ export function render(state: GameState, onChange: () => void): void {
           Buy Fruit (${fruitCost} lifepoints)
         </button>
         <button id="clear-fruit">Clear Fruit</button>
+        ${!state.hasVenusTrap && state.fruit.length >= TRAP_UNLOCK_FRUIT ? `
+          <button id="buy-venus-trap" ${state.lifepoints.lessThan(TRAP_COST) ? 'disabled' : ''}>
+            Buy Venus Trap (${TRAP_COST} lifepoints)
+          </button>
+        ` : ''}
         <button id="toggle-stats">
           ${showStats ? 'Hide Stats' : 'Show Stats'}
         </button>
@@ -395,6 +431,12 @@ export function render(state: GameState, onChange: () => void): void {
     onChange();
   });
 
+  document.querySelector<HTMLButtonElement>('#buy-venus-trap')?.addEventListener('click', () => {
+    if (buyTrap(state)) {
+      onChange();
+    }
+  });
+
   document.querySelector<HTMLButtonElement>('#cheat-button')?.addEventListener('click', () => {
     const input = document.querySelector<HTMLInputElement>('#cheat');
     if (!input) return;
@@ -422,7 +464,11 @@ export function render(state: GameState, onChange: () => void): void {
     button.addEventListener('click', (event) => {
       event.stopPropagation();
       const index = Number(button.dataset.dinoIndex);
-      sellDinosaurAt(state, index);
+      if (state.hasVenusTrap) {
+        startDevour(state, index);
+      } else {
+        sellDinosaurAt(state, index);
+      }
       selectedDinosaurIndex = null;
       onChange();
     });

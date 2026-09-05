@@ -14,15 +14,6 @@ const STRUT_DURATION_TICKS = 3;
 export const LEAVE_DURATION_TICKS = 2;
 const MODIFIER_CHANCE = 100;
 
-const DINOSAUR_COSTS: Record<string, number> = {
-  triceratops: 700,
-  stegosaur: 1000,
-  brontosaur: 1200,
-  pteranadon: 1400,
-  trex: 1600,
-  bevisaur: 2000,
-};
-
 const DINOSAUR_SPAWN_WEIGHTS: Record<string, number> = {
   triceratops: 20,
   stegosaur: 20,
@@ -34,9 +25,9 @@ const DINOSAUR_SPAWN_WEIGHTS: Record<string, number> = {
 
 export const GROUND_ELEVATION_Y = 80;
 
-// Where recruited dinosaurs park their asses, near the tree.
+// Where recruited dinosaurs park their asses, near the tree
 export const DINOSAUR_PARK_BASE_X = 55;
-export const DINOSAUR_PARK_Y = 70;
+export const DINOSAUR_PARK_Y = GROUND_ELEVATION_Y;
 const DINOSAUR_PARK_SPACING_X = 8;
 
 export function buyDinosaur(state: GameState, dinosaur: Dinosaur) {
@@ -59,9 +50,6 @@ export function buyDinosaur(state: GameState, dinosaur: Dinosaur) {
 
     state.dinosaurslot[state.dinomaxslots - 1] = parkedDinosaur;
   }
-
-  const cost = DINOSAUR_COSTS[dinosaur.name] ?? 0;
-  state.lifepoints = state.lifepoints.minus(cost);
 }
 
 export function trySpawnDinosaur(state: GameState): void {
@@ -136,6 +124,10 @@ export function sellDinosaurAt(state: GameState, index: number) {
     state.dinosaurslot.splice(index, 1);
 }
 
+const VIBE_WANDER_RANGE = 5;
+const VIBE_X_MIN = 10;
+const VIBE_X_MAX = 90;
+
 export function tickDinosaur(dinosaur: Dinosaur): boolean {
     if (dinosaur.phase === dinosaurphase.STRUTTING) {
         dinosaur.ticks++;
@@ -145,6 +137,8 @@ export function tickDinosaur(dinosaur: Dinosaur): boolean {
         return false;
     } else if (dinosaur.phase === dinosaurphase.VIBING) {
         dinosaur.ticks++;
+        const delta = (Math.random() * 2 - 1) * VIBE_WANDER_RANGE;
+        dinosaur.x = Math.min(VIBE_X_MAX, Math.max(VIBE_X_MIN, dinosaur.x + delta));
         if (dinosaur.ticks >= TIME_FOR_DINO_PATIENCE) {
             dinosaur.phase = dinosaurphase.LEAVING;
         }

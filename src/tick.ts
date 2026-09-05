@@ -3,6 +3,7 @@ import { tickMeteor } from "./meteor"
 import { randomLeaf } from "./purchases"
 import {peep, dequeue} from "./buffqueue"
 import { tickDinosaur, trySpawnDinosaur, tickPoop } from "./dinosaur"
+import { tickTrap } from "./venustrap"
 import Decimal from "break_eternity.js"
 
 // time moving
@@ -42,6 +43,7 @@ export function countUp(state: GameState) {
   }
 
   tickPoop(state);
+  tickTrap(state);
 
   if (tickMeteor()) {
     state.extinction = Extinction.ASTEROID;
