@@ -1,10 +1,19 @@
 import { GameState, Leaf, Fruit, addPoints } from "./main";
 import { enqueue } from "./buffqueue";
-import { costLeaf, costAurafarm, costClickIncrease, costFruit, costPhotoSynthesis, costFlowers } from "./growth";
+import { costLeaf, costAurafarm, costClickIncrease, costFruit, costPhotoSynthesis, costFlowers, costRoot } from "./growth";
 import Decimal from "break_eternity.js";
 
 export const FRUIT_BUFF_DURATION = 60;
 
+
+export function buyRoot(state: GameState): boolean {
+  const rootCost = getCost(state, 'ROOTS');
+
+  if (state.lifepoints.lessThan(rootCost)) return false;
+  state.lifepoints = state.lifepoints.minus(rootCost);
+  state.rootdepth++;
+  return true;
+}
 
 export function buyFruit(state: GameState): boolean {
   const fruit_cost = getCost(state, 'FRUIT');
@@ -153,6 +162,8 @@ function getCost(state: GameState, upgrade: string): Decimal {
     return costAurafarm(state.upgrades.aurafarm);
   } else if (upgrade === 'FLOWERS') {
     return costFlowers(state.upgrades.flower.numFlowers);
+  } else if (upgrade === 'ROOTS') {
+    return costRoot(state.rootdepth);
   }
   // placeholder cost
   return new Decimal(0);

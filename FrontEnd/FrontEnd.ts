@@ -1,7 +1,7 @@
 import type { GameState, Poop } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
-import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis } from '../src/purchases.js'
-import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM } from '../src/meteor.js'
+import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis, buyRoot } from '../src/purchases.js'
+import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM, ROOT_REQUIREMENT } from '../src/meteor.js'
 import ground_image from './assets/ground.png'
 import sun_image from './assets/sun.png'
 import tree_image from './assets/treewow.png'
@@ -15,9 +15,10 @@ import antony_image from './assets/antony.png'
 import ethan_image from './assets/ethan.png'
 import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
-import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis } from '../src/growth.js';
+import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis, costRoot } from '../src/growth.js';
 import { recruitActiveDinosaur, sellDinosaurAt, collectPoop, dinosaurphase } from '../src/dinosaur.js';
 import { buyTrap, startDevour, getVenusPhase, VenusPhase, TRAP_COST, TRAP_UNLOCK_FRUIT } from '../src/venustrap.js';
+import { TOTAL_DEPTH } from '../src/roots.js';
 import trike_image from './assets/trike.png'
 import steg_image from './assets/steg.png'
 import bront_image from './assets/bront.png'
@@ -27,6 +28,8 @@ import poop_image from './assets/poop.png'
 import dinomuncher_image from './assets/dinomuncher.png'
 import dinomuncheropen_image from './assets/dinomunchermouthopen.png'
 import dinomuncherlookingdown_image from './assets/dinomuncherlookingdown.png'
+import depthindicator_image from './assets/depthindicator.png'
+import yourlevel_image from './assets/yourlevel.png'
 import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -63,6 +66,9 @@ const VENUS_TRAP_SIZE = 200;
 const CONTROLS_WIDTH = 300;
 const CONTROLS_POSITION = { x: 40, y: 40 };
 const STATS_PANEL_POSITION = { x: CONTROLS_POSITION.x + CONTROLS_WIDTH + 20, y: CONTROLS_POSITION.y };
+
+const DEPTH_BAR_HEIGHT = 260;
+const DEPTH_BAR_POSITION = { x: STATS_PANEL_POSITION.x + 280, y: STATS_PANEL_POSITION.y + 10 };
 
 let showStats = false;
 
@@ -304,12 +310,26 @@ function renderGameOver(): string {
   return `<div class="game-over-text">GAME OVER</div>`;
 }
 
+function renderDepthBar(state: GameState): string {
+  if (!showStats) return '';
+  const currentPercent = Math.max(0, Math.min(100, (state.rootdepth / TOTAL_DEPTH) * 100));
+  const requirementPercent = Math.max(0, Math.min(100, (ROOT_REQUIREMENT / TOTAL_DEPTH) * 100));
+  return `
+    <div class="depth-bar" style="left: ${DEPTH_BAR_POSITION.x}px; top: ${DEPTH_BAR_POSITION.y}px; height: ${DEPTH_BAR_HEIGHT}px;">
+      <img src="${depthindicator_image}" alt="Root Depth" class="depth-bar-image" style="height: ${DEPTH_BAR_HEIGHT}px;" />
+      <img src="${yourlevel_image}" alt="Your current root depth" class="depth-arrow depth-arrow-current" style="top: ${currentPercent}%;" />
+      <div class="depth-arrow depth-arrow-requirement" style="top: ${requirementPercent}%;">&larr; Meteor Requirement</div>
+    </div>
+  `;
+}
+
 export function render(state: GameState, onChange: () => void): void {
   const leafCost = costLeaf(state.upgrades.leaf);
   const fruitCost = costFruit(state.fruit.length);
   const photosynthesisCost = costPhotoSynthesis(state.upgrades.photosynthesis);
   const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);
   const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
+  const rootCost = costRoot(state.rootdepth);
 
   const worldWidth = worldUnlocked ? EXPANDED_WORLD_WIDTH : window.innerWidth;
   const worldHeight = worldUnlocked ? EXPANDED_WORLD_HEIGHT : window.innerHeight;
@@ -353,6 +373,9 @@ export function render(state: GameState, onChange: () => void): void {
           Buy Fruit (${fruitCost} lifepoints)
         </button>
         <button id="clear-fruit">Clear Fruit</button>
+        <button id="buy-root" ${state.lifepoints.lessThan(rootCost) || state.rootdepth >= TOTAL_DEPTH ? 'disabled' : ''}>
+          Buy Root (${rootCost} lifepoints)
+        </button>
         ${!state.hasVenusTrap && state.fruit.length >= TRAP_UNLOCK_FRUIT ? `
           <button id="buy-venus-trap" ${state.lifepoints.lessThan(TRAP_COST) ? 'disabled' : ''}>
             Buy Venus Trap (${TRAP_COST} lifepoints)
@@ -370,8 +393,10 @@ export function render(state: GameState, onChange: () => void): void {
           <p> Fruits: ${state.fruit.length}</p>
           <p> Aurafarms: ${state.upgrades.aurafarm.toString()}</p>
           <p> Photosynthesis: ${state.upgrades.photosynthesis.toString()}</p>
+          <p> Root Depth: ${state.rootdepth} / ${TOTAL_DEPTH}</p>
         </div>
       ` : ''}
+      ${renderDepthBar(state)}
     </div>
     ${renderGameOver()}
   `;
@@ -424,6 +449,12 @@ export function render(state: GameState, onChange: () => void): void {
   document.querySelector<HTMLButtonElement>('#clear-fruit')!.addEventListener('click', () => {
     clearFruit(state);
     onChange();
+  });
+
+  document.querySelector<HTMLButtonElement>('#buy-root')!.addEventListener('click', () => {
+    if (buyRoot(state)) {
+      onChange();
+    }
   });
 
   document.querySelector<HTMLButtonElement>('#toggle-stats')?.addEventListener('click', () => {

@@ -40,6 +40,33 @@
       .stats-panel p {
         margin: 0.25rem 0;
       }
+      .depth-bar {
+        position: absolute;
+        z-index: 20;
+      }
+      .depth-bar-image {
+        display: block;
+      }
+      .depth-arrow {
+        position: absolute;
+        transform: translateY(-50%);
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      .depth-arrow-current {
+        left: -200px;
+        width: 200px;
+      }
+      .depth-arrow-requirement {
+        left: 100%;
+        margin-left: 8px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #b22222;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+      }
       .tree-button {
         background: none;
         border: none;

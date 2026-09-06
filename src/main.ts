@@ -3,6 +3,7 @@ import { render } from "../FrontEnd/FrontEnd.js";
 import Decimal from "break_eternity.js";
 import { dinosaurphase } from "./dinosaur";
 import { Flower } from "./generators/flower";
+import { getLevelMult } from "./roots";
 
 const SAVE_KEY = 'incremental-save';
 const TICK_INTERVAL_MS = 1000;
@@ -44,6 +45,7 @@ export interface GameState {
   upgrades: Upgrades;
   leaves: Leaf[];
   fruit: Fruit[];
+  rootdepth: number;
   buffsqueue: Buff[];
   tickCounter: number;
   tickRate: number;
@@ -99,6 +101,7 @@ export function defaultState(): GameState {
     leaves: [],
     buffsqueue: [],
     fruit: [],
+    rootdepth: 0,
     tickCounter: 0,
     tickRate: 1,
     dinosaurslot: [],
@@ -112,6 +115,7 @@ export function defaultState(): GameState {
 
 export function updateGlobalMultipler() {
   state.globalMult = state.upgrades.flower.currFlowerMultiplier;
+  state.globalMult = state.globalMult.mul(getLevelMult(state));
 }
 
 export function addPoints(points: Decimal) {
