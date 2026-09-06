@@ -39,6 +39,7 @@ export interface GameState {
   loops: number;
   lifepoints: Decimal;
   will: Decimal;
+  globalMult: Decimal;
   upgrades: Upgrades;
   leaves: Leaf[];
   fruit: Fruit[];
@@ -81,6 +82,7 @@ export function defaultState(): GameState {
     loops: 0,
     lifepoints: new Decimal(0),
     will: new Decimal(1),
+    globalMult: new Decimal(1),
     upgrades: {
       clickIncrease: new Decimal(0),
       leaf: new Decimal(0),
@@ -101,6 +103,10 @@ export function defaultState(): GameState {
     hasVenusTrap: false,
     extinction: Extinction.ALIVE,
   };
+}
+
+export function addPoints (points: Decimal) {
+  state.lifepoints.add(state.globalMult.mul(points));
 }
 
 function loadState(): GameState {

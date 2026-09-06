@@ -1,5 +1,6 @@
-import { Dinosaur, GameState } from "./main";
+import { addPoints, Dinosaur, GameState } from "./main";
 import { sellDinosaurAt } from "./dinosaur";
+import Decimal from "break_eternity.js";
 
 export enum VenusPhase {
     IDLE,
@@ -72,7 +73,8 @@ export function tickTrap(state: GameState): void {
       const index = state.dinosaurslot.indexOf(pendingDevourDinosaur);
       if (index !== -1) {
         sellDinosaurAt(state, index);
-        state.lifepoints = state.lifepoints.add(pendingDevourReward);
+        let PDR = new Decimal(pendingDevourReward);
+        addPoints(PDR);
       }
     }
     pendingDevourDinosaur = null;

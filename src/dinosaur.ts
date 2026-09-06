@@ -1,4 +1,5 @@
-import { Dinosaur, GameState, Poop } from "./main";
+import Decimal from "break_eternity.js";
+import { addPoints, Dinosaur, GameState, Poop } from "./main";
 
 export enum dinosaurphase {
     STRUTTING,
@@ -179,5 +180,6 @@ export function collectPoop(state: GameState, poop: Poop): void {
   const index = state.poop.indexOf(poop);
   if (index === -1) return;
   state.poop.splice(index, 1);
-  state.lifepoints = state.lifepoints.add(POOP_VALUE);
+  let poopoo = new Decimal(25);
+  addPoints(poopoo);
 }
