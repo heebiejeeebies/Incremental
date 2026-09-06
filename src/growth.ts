@@ -32,3 +32,9 @@ export function costAurafarm(level: Decimal): Decimal {
   const start_cost = new Decimal('10000');
   return start_cost.mul(base.pow(level)).floor(); 
 }
+
+export function costFlowers(level: Decimal): Decimal {
+    const base = new Decimal (1.05);
+    const start_cost = new Decimal('50000');
+    return start_cost.mul(base.pow(level)).floor();
+}
