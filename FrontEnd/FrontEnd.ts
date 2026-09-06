@@ -1,4 +1,4 @@
-import type { GameState, Poop } from '../src/main.js';
+import type { GameState, Poop, Leaf } from '../src/main.js';
 import {clickTree} from '../src/tree.js'
 import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis, buyRoot } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM, ROOT_REQUIREMENT } from '../src/meteor.js'
@@ -34,6 +34,47 @@ import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
+const leavesContainer = document.createElement('div');
+leavesContainer.className = 'leaves-overlay';
+leavesContainer.style.position = 'absolute';
+leavesContainer.style.pointerEvents = 'none';
+document.body.appendChild(leavesContainer);
+const leafElements = new Map<Leaf, HTMLImageElement>();
+
+function updateLeaves(state: GameState): void {
+  const treeContainerEl = document.querySelector<HTMLDivElement>('.tree-container');
+  if (!treeContainerEl) return;
+
+  const rect = treeContainerEl.getBoundingClientRect();
+  leavesContainer.style.left = `${rect.left + window.scrollX}px`;
+  leavesContainer.style.top = `${rect.top + window.scrollY}px`;
+  leavesContainer.style.width = `${rect.width}px`;
+  leavesContainer.style.height = `${rect.height}px`;
+
+  const currentLeaves = new Set(state.leaves);
+
+  for (const [leaf, el] of leafElements) {
+    if (!currentLeaves.has(leaf)) {
+      el.remove();
+      leafElements.delete(leaf);
+    }
+  }
+
+  for (const leaf of state.leaves) {
+    if (leafElements.has(leaf)) continue;
+
+    const el = document.createElement('img');
+    el.src = leaf_image;
+    el.alt = 'Leaf';
+    el.className = 'leaf-image';
+    el.style.left = `${leaf.x}%`;
+    el.style.top = `${leaf.y}%`;
+    el.style.transform = `translate(-50%, -50%) rotate(${leaf.rotation}deg)`;
+    leavesContainer.appendChild(el);
+    leafElements.set(leaf, el);
+  }
+}
+
 const EXPANDED_WORLD_HEIGHT = 2000;
 const WORLD_UNLOCK_LIFEPOINTS = 1000;
 
@@ -65,15 +106,6 @@ const DEPTH_BAR_HEIGHT = 260;
 const DEPTH_BAR_POSITION = { x: STATS_PANEL_POSITION.x + 280, y: STATS_PANEL_POSITION.y + 10 };
 
 let showStats = false;
-
-function renderLeaves(state: GameState): string {
-  return state.leaves
-    .map(
-      (leaf) =>
-        `<img src="${leaf_image}" alt="Leaf" class="leaf-image" style="left: ${leaf.x}%; top: ${leaf.y}%; transform: translate(-50%, -50%) rotate(${leaf.rotation}deg);" />`
-    )
-    .join('');
-}
 
 const FRUIT_IMAGES: Record<string, string> = {
   ethanberry: ethan_image,
@@ -344,7 +376,6 @@ export function render(state: GameState, onChange: () => void): void {
         <button id="tree" class="tree-button">
           <img src="${tree_image}" alt="Tree" />
         </button>
-        ${renderLeaves(state)}
         ${renderFruit(state)}
         ${renderExplosion()}
       </div>
@@ -403,6 +434,7 @@ export function render(state: GameState, onChange: () => void): void {
   updateMeteor();
   updateActiveDinosaur(state, worldWidth, worldHeight);
   updatePoop(state, worldWidth, worldHeight, onChange);
+  updateLeaves(state);
   attachDinosaurClickListenerOnce(state, onChange);
 
   document.querySelector<HTMLButtonElement>('#tree')!.addEventListener('click', () => {
