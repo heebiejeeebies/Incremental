@@ -34,14 +34,8 @@ import Decimal from 'break_eternity.js';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
-const EXPANDED_WORLD_WIDTH = 4000;
 const EXPANDED_WORLD_HEIGHT = 2000;
-let worldUnlocked = false;
-
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 2;
-const ZOOM_STEP = 0.0015; 
-let zoomLevel = 1;
+const WORLD_UNLOCK_LIFEPOINTS = 1000;
 
 const GROUND_WIDTH = window.innerWidth;
 const GROUND_HEIGHT = window.innerHeight;
@@ -116,7 +110,7 @@ const dinosaurImg = dinosaurContainer.querySelector<HTMLImageElement>('img')!;
 let lastSeenActiveDinosaur: GameState['activeDinosaur'] = null;
 let lastSeenActiveDinosaurPhase: dinosaurphase | null = null;
 
-function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight: number, zoomLevel: number): void {
+function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight: number): void {
   const dinosaur = state.activeDinosaur;
 
   if (!dinosaur) {
@@ -129,18 +123,18 @@ function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight:
   dinosaurContainer.style.display = '';
   dinosaurImg.src = DINOSAUR_IMAGES[dinosaur.name];
   dinosaurContainer.style.opacity = dinosaur.phase === dinosaurphase.LEAVING ? '0.3' : '1';
-  dinosaurContainer.style.transform = `translate(-50%, -50%) scale(${zoomLevel})`;
+  dinosaurContainer.style.transform = 'translate(-50%, -50%)';
 
-  const restLeft = (dinosaur.x / 100) * worldWidth * zoomLevel;
-  const restTop = (dinosaur.y / 100) * worldHeight * zoomLevel;
+  const restLeft = (dinosaur.x / 100) * worldWidth;
+  const restTop = (dinosaur.y / 100) * worldHeight;
 
   if (dinosaur !== lastSeenActiveDinosaur) {
     // brand new spawn: snap to the entry point, then walk in to the rest
     // position over the full 3s strut duration
     lastSeenActiveDinosaur = dinosaur;
     lastSeenActiveDinosaurPhase = dinosaur.phase;
-    const entryLeft = (dinosaur.entryX / 100) * worldWidth * zoomLevel;
-    const entryTop = (dinosaur.entryY / 100) * worldHeight * zoomLevel;
+    const entryLeft = (dinosaur.entryX / 100) * worldWidth;
+    const entryTop = (dinosaur.entryY / 100) * worldHeight;
     dinosaurContainer.style.transition = 'none';
     dinosaurContainer.style.left = `${entryLeft}px`;
     dinosaurContainer.style.top = `${entryTop}px`;
@@ -193,7 +187,7 @@ const poopContainer = document.createElement('div');
 document.body.appendChild(poopContainer);
 const poopElements = new Map<Poop, HTMLImageElement>();
 
-function updatePoop(state: GameState, worldWidth: number, worldHeight: number, zoomLevel: number, onChange: () => void): void {
+function updatePoop(state: GameState, worldWidth: number, worldHeight: number, onChange: () => void): void {
   const currentPoop = new Set(state.poop);
 
   for (const [poop, el] of poopElements) {
@@ -204,9 +198,9 @@ function updatePoop(state: GameState, worldWidth: number, worldHeight: number, z
   }
 
   for (const poop of state.poop) {
-    const left = (poop.x / 100) * worldWidth * zoomLevel;
-    const top = (poop.y / 100) * worldHeight * zoomLevel;
-    const transform = `translate(-50%, -50%) scale(${zoomLevel})`;
+    const left = (poop.x / 100) * worldWidth;
+    const top = (poop.y / 100) * worldHeight;
+    const transform = 'translate(-50%, -50%)';
 
     let el = poopElements.get(poop);
     if (!el) {
@@ -258,7 +252,7 @@ meteorContainer.innerHTML = `
 document.body.appendChild(meteorContainer);
 const meteorFireImg = meteorContainer.querySelector<HTMLImageElement>('.fire-img')!;
 
-function updateMeteor(zoomLevel: number): void {
+function updateMeteor(): void {
   const phase = getMeteorPhase();
 
   if (phase === MeteorPhase.EXPLODING || phase === MeteorPhase.GAME_OVER) {
@@ -267,7 +261,7 @@ function updateMeteor(zoomLevel: number): void {
   }
 
   meteorContainer.style.display = '';
-  meteorContainer.style.transform = `translate(-50%, -50%) rotate(-45deg) scale(${zoomLevel})`;
+  meteorContainer.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
   const sizeFraction = Math.min(getMeteorSize() / SIZE_FOR_BOOM, 1);
   const pixelSize = 40 + sizeFraction * 120;
   meteorContainer.style.width = `${pixelSize}px`;
@@ -275,15 +269,14 @@ function updateMeteor(zoomLevel: number): void {
   meteorFireImg.style.opacity = String(Math.min(getMeteorBurnedness() / SIZE_FOR_BOOM, 1));
 
   const target = phase === MeteorPhase.FLYING_TO_CENTER ? TREE_POSITION : METEOR_START_POSITION;
-  meteorContainer.style.left = `${target.x * zoomLevel}px`;
-  meteorContainer.style.top = `${target.y * zoomLevel}px`;
+  meteorContainer.style.left = `${target.x}px`;
+  meteorContainer.style.top = `${target.y}px`;
 }
 
 const cheat = document.createElement('div');
 cheat.innerHTML = `
   <input type="text" id="cheat" placeholder="get bajillion LP" style= "pointer-events: auto; cursor: text;" />
   <button id="cheat-button">Add LP</button>
-  <button id="unlock-world-button">Unlock World</button>
 `;
 document.body.appendChild(cheat);
 
@@ -331,13 +324,16 @@ export function render(state: GameState, onChange: () => void): void {
   const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
   const rootCost = costRoot(state.rootdepth);
 
-  const worldWidth = worldUnlocked ? EXPANDED_WORLD_WIDTH : window.innerWidth;
+  const worldUnlocked = state.lifepoints.gte(WORLD_UNLOCK_LIFEPOINTS);
+  const worldWidth = window.innerWidth;
   const worldHeight = worldUnlocked ? EXPANDED_WORLD_HEIGHT : window.innerHeight;
-  document.body.style.overflow = worldUnlocked ? 'auto' : 'hidden';
-  document.documentElement.style.overflow = worldUnlocked ? 'auto' : 'hidden';
+  document.body.style.overflowY = worldUnlocked ? 'auto' : 'hidden';
+  document.body.style.overflowX = 'hidden';
+  document.documentElement.style.overflowY = worldUnlocked ? 'auto' : 'hidden';
+  document.documentElement.style.overflowX = 'hidden';
 
   app.innerHTML = `
-    <div class="world" style="width: ${worldWidth}px; height: ${worldHeight}px; transform: scale(${zoomLevel}); transform-origin: 0 0;">
+    <div class="world" style="width: ${worldWidth}px; height: ${worldHeight}px;">
       <img src="${ground_image}" alt="Ground" class="ground-image" style="width: ${GROUND_WIDTH}px; height: ${GROUND_HEIGHT}px;" />
       <img src="${sun_image}" alt="Sun" class="sun-image" style="left: ${SUN_POSITION.x}px; top: ${SUN_POSITION.y}px; width: ${SUN_SIZE}px; height: ${SUN_SIZE}px;" />
       <img src="${bevis}" alt="Bevis" class="bevis-image" style="left: ${BEVIS_POSITION.x}px; top: ${BEVIS_POSITION.y}px;" />
@@ -401,9 +397,9 @@ export function render(state: GameState, onChange: () => void): void {
     ${renderGameOver()}
   `;
 
-  updateMeteor(zoomLevel);
-  updateActiveDinosaur(state, worldWidth, worldHeight, zoomLevel);
-  updatePoop(state, worldWidth, worldHeight, zoomLevel, onChange);
+  updateMeteor();
+  updateActiveDinosaur(state, worldWidth, worldHeight);
+  updatePoop(state, worldWidth, worldHeight, onChange);
   attachDinosaurClickListenerOnce(state, onChange);
 
   document.querySelector<HTMLButtonElement>('#tree')!.addEventListener('click', () => {
@@ -478,11 +474,6 @@ export function render(state: GameState, onChange: () => void): void {
     onChange();
   });
 
-  document.querySelector<HTMLButtonElement>('#unlock-world-button')?.addEventListener('click', () => {
-    worldUnlocked = !worldUnlocked;
-    onChange();
-  });
-
   document.querySelectorAll<HTMLButtonElement>('.parked-dinosaur-button').forEach((button) => {
     button.addEventListener('click', () => {
       const index = Number(button.dataset.dinoIndex);
@@ -504,19 +495,4 @@ export function render(state: GameState, onChange: () => void): void {
       onChange();
     });
   });
-
-  if (worldUnlocked) {
-    document.querySelector<HTMLDivElement>('.world')!.addEventListener(
-      'wheel',
-      (event) => {
-        event.preventDefault();
-        zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel - event.deltaY * ZOOM_STEP));
-        document.querySelector<HTMLDivElement>('.world')!.style.transform = `scale(${zoomLevel})`;
-        updateMeteor(zoomLevel);
-        updateActiveDinosaur(state, worldWidth, worldHeight, zoomLevel);
-        updatePoop(state, worldWidth, worldHeight, zoomLevel, onChange);
-      },
-      { passive: false }
-    );
-  }
 }
