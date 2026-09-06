@@ -1,4 +1,4 @@
-import { GameState, Leaf, Fruit} from "./main";
+import { GameState, Leaf, Fruit, addPoints} from "./main";
 import {enqueue} from "./buffqueue";
 import { costLeaf, costAurafarm, costClickIncrease, costFruit, costPhotoSynthesis, costFlowers} from "./growth";
 import Decimal from "break_eternity.js";
@@ -16,7 +16,9 @@ export function buyFruit(state: GameState): boolean {
     // dud
     state.fruit.push(createFruit("ethanberry"));
   } else if (type < 4) {
-    state.lifepoints = state.lifepoints.add(fruit_cost).add(10);
+    let costdec = new Decimal(fruit_cost);
+    costdec.add(10);
+    addPoints(costdec);
     state.fruit.push(createFruit("antonyberry"));
   } else if (type < 6) {
     enqueue(state.buffsqueue, {
