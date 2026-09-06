@@ -57,7 +57,8 @@ export interface Upgrades {
   clickIncrease: Decimal,
   leaf: Decimal,
   photosynthesis: Decimal,
-  aurafarm: Decimal
+  aurafarm: Decimal,
+  flowers: Decimal
   // add other upgrades which could be objects that contain other special fields
 }
 
@@ -84,7 +85,8 @@ export function defaultState(): GameState {
       clickIncrease: new Decimal(0),
       leaf: new Decimal(0),
       photosynthesis: new Decimal(0), // life point per leaf/s
-      aurafarm: new Decimal(0)
+      aurafarm: new Decimal(0),
+      flowers: new Decimal(0)
       // add more upgrades
     },
     leaves: [],
@@ -116,6 +118,7 @@ function loadState(): GameState {
     leaf: new Decimal(merged.upgrades.leaf),
     photosynthesis: new Decimal(merged.upgrades.photosynthesis),
     aurafarm: new Decimal(merged.upgrades.aurafarm),
+    flowers: new Decimal(merged.upgrades.flowers)
   };
 
   return merged;
