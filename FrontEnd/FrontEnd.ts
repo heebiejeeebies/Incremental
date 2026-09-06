@@ -331,6 +331,9 @@ export function render(state: GameState, onChange: () => void): void {
   document.body.style.overflowX = 'hidden';
   document.documentElement.style.overflowY = worldUnlocked ? 'auto' : 'hidden';
   document.documentElement.style.overflowX = 'hidden';
+  if (!worldUnlocked) {
+    window.scrollTo(0, 0);
+  }
 
   app.innerHTML = `
     <div class="world" style="width: ${worldWidth}px; height: ${worldHeight}px;">
