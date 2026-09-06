@@ -1,6 +1,6 @@
-import { GameState, Leaf, Fruit, addPoints} from "./main";
-import {enqueue} from "./buffqueue";
-import { costLeaf, costAurafarm, costClickIncrease, costFruit, costPhotoSynthesis, costFlowers} from "./growth";
+import { GameState, Leaf, Fruit, addPoints } from "./main";
+import { enqueue } from "./buffqueue";
+import { costLeaf, costAurafarm, costClickIncrease, costFruit, costPhotoSynthesis, costFlowers } from "./growth";
 import Decimal from "break_eternity.js";
 
 export const FRUIT_BUFF_DURATION = 60;
@@ -22,19 +22,19 @@ export function buyFruit(state: GameState): boolean {
     state.fruit.push(createFruit("antonyberry"));
   } else if (type < 6) {
     enqueue(state.buffsqueue, {
-      type: "will", 
+      type: "will",
       remainingTicks: FRUIT_BUFF_DURATION
     });
     state.fruit.push(createFruit("izaacberry"));
   } else if (type < 8) {
     enqueue(state.buffsqueue, {
-      type: "leaf", 
+      type: "leaf",
       remainingTicks: FRUIT_BUFF_DURATION
     });
     state.fruit.push(createFruit("allenberry"));
   } else {
     enqueue(state.buffsqueue, {
-      type: "will&leaf", 
+      type: "will&leaf",
       remainingTicks: FRUIT_BUFF_DURATION
     });
     state.fruit.push(createFruit("kevinberry"));
@@ -50,7 +50,7 @@ function createFruit(type: string): Fruit {
   const radiusY = 22.5;
 
   const angle = Math.random() * 2 * Math.PI;
-  const radius = Math.sqrt(Math.random()); 
+  const radius = Math.sqrt(Math.random());
 
   return {
     x: centerX + Math.cos(angle) * radius * radiusX,
@@ -71,7 +71,7 @@ export function randomLeaf(): Leaf {
   const radiusY = 22.5;
 
   const angle = Math.random() * 2 * Math.PI;
-  const radius = Math.sqrt(Math.random()); 
+  const radius = Math.sqrt(Math.random());
 
   return {
     x: centerX + Math.cos(angle) * radius * radiusX,
@@ -122,10 +122,10 @@ export function buyAuraFarm(state: GameState) {
   const aurafarmCost = getCost(state, 'AURAFARM');
 
   if (!state) return;
-   if (state.lifepoints.lessThan(aurafarmCost)) return false;
-    state.lifepoints = state.lifepoints.minus(aurafarmCost);
-    state.upgrades.aurafarm = state.upgrades.aurafarm.add(1);
-    return true;
+  if (state.lifepoints.lessThan(aurafarmCost)) return false;
+  state.lifepoints = state.lifepoints.minus(aurafarmCost);
+  state.upgrades.aurafarm = state.upgrades.aurafarm.add(1);
+  return true;
 }
 
 export function buyFlowers(state: GameState) {
@@ -134,7 +134,7 @@ export function buyFlowers(state: GameState) {
   if (!state) return;
   if (state.lifepoints.lessThan(flowersCost)) return false;
   state.lifepoints = state.lifepoints.minus(flowersCost);
-  state.upgrades.flowers = state.upgrades.flowers.add(1);
+  state.upgrades.flower.numFlowers = state.upgrades.flower.numFlowers.add(1);
   return true;
 }
 
@@ -152,7 +152,7 @@ function getCost(state: GameState, upgrade: string): Decimal {
   } else if (upgrade === 'AURAFARM') {
     return costAurafarm(state.upgrades.aurafarm);
   } else if (upgrade === 'FLOWERS') {
-    return costFlowers(state.upgrades.flowers);
+    return costFlowers(state.upgrades.flower.numFlowers);
   }
   // placeholder cost
   return new Decimal(0);

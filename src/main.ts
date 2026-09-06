@@ -2,6 +2,7 @@ import { countUp, checkExtinctions } from "./tick";
 import { render } from "../FrontEnd/FrontEnd.js";
 import Decimal from "break_eternity.js";
 import { dinosaurphase } from "./dinosaur";
+import { Flower } from "./generators/flower";
 
 const SAVE_KEY = 'incremental-save';
 const TICK_INTERVAL_MS = 1000;
@@ -15,7 +16,7 @@ export enum Extinction {
 
 export interface Leaf {
   x: number; // coords
-  y: number; 
+  y: number;
   rotation: number; // rotation
 }
 
@@ -26,13 +27,13 @@ export interface Buff {
 
 export interface Fruit {
   x: number; // coords
-  y: number; 
+  y: number;
   typeName: string; // rotation
 }
 
 export interface Poop {
-  x: number; 
-  y: number; 
+  x: number;
+  y: number;
 }
 
 export interface GameState {
@@ -59,7 +60,7 @@ export interface Upgrades {
   leaf: Decimal,
   photosynthesis: Decimal,
   aurafarm: Decimal,
-  flowers: Decimal
+  flower: Flower
   // add other upgrades which could be objects that contain other special fields
 }
 
@@ -88,7 +89,11 @@ export function defaultState(): GameState {
       leaf: new Decimal(0),
       photosynthesis: new Decimal(0), // life point per leaf/s
       aurafarm: new Decimal(0),
-      flowers: new Decimal(0)
+      flower: {
+        numFlowers: new Decimal(0),
+        maxFlowerMultiplier: new Decimal(1),
+        currFlowerMultiplier: new Decimal(1)
+      }
       // add more upgrades
     },
     leaves: [],
@@ -105,7 +110,7 @@ export function defaultState(): GameState {
   };
 }
 
-export function addPoints (points: Decimal) {
+export function addPoints(points: Decimal) {
   state.lifepoints.add(state.globalMult.mul(points));
 }
 
@@ -124,7 +129,11 @@ function loadState(): GameState {
     leaf: new Decimal(merged.upgrades.leaf),
     photosynthesis: new Decimal(merged.upgrades.photosynthesis),
     aurafarm: new Decimal(merged.upgrades.aurafarm),
-    flowers: new Decimal(merged.upgrades.flowers)
+    flower: {
+      numFlowers: new Decimal(merged.upgrades.flower.numFlowers),
+      maxFlowerMultiplier: new Decimal(merged.upgrades.flower.maxFlowerMultiplier),
+      currFlowerMultiplier: new Decimal(merged.upgrades.flower.currFlowerMultiplier)
+    }
   };
 
   return merged;
