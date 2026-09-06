@@ -4,6 +4,7 @@ import { dequeue } from "./buffqueue"
 import { tickDinosaur, trySpawnDinosaur, tickPoop } from "./dinosaur"
 import { tickTrap } from "./venustrap"
 import { leafpoints } from "./generators/leaf"
+import { aurafarmPoints } from "./generators/auraFarm"
 
 // time moving
 export function countUp(state: GameState) {
@@ -17,8 +18,10 @@ export function countUp(state: GameState) {
 
   // every 3 (for testing purpses) seconds add a leaf for each aura farm
   if (state.tickCounter % 3 === 0) {
-    tickBuffs(state);
+    aurafarmPoints(state);
   }
+
+  tickBuffs(state);
 
   if (state.activeDinosaur) {
     if (tickDinosaur(state.activeDinosaur)) {
