@@ -128,6 +128,7 @@ function loadState(): GameState {
 
   merged.lifepoints = new Decimal(merged.lifepoints);
   merged.will = new Decimal(merged.will);
+  merged.globalMult = new Decimal(merged.globalMult);
   merged.upgrades = {
     clickIncrease: new Decimal(merged.upgrades.clickIncrease),
     leaf: new Decimal(merged.upgrades.leaf),
@@ -150,7 +151,6 @@ function saveState(state: GameState) {
 const state = loadState();
 
 function update() {
-
   saveState(state);
   render(state, update);
 }
