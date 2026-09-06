@@ -11,6 +11,9 @@ const FLY_DURATION_TICKS = 3;
 const EXPLODE_DURATION_TICKS = 2;
 const GAME_OVER_DURATION_TICKS = 2;
 
+const ROOT_REQUIREMENT = 50;
+const WILL_REQUIREMENT = 5;
+
 let size = 1;
 let burnedness = 0;
 let phase: MeteorPhase = MeteorPhase.FALLING;

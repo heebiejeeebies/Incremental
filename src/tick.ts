@@ -1,4 +1,4 @@
-import { GameState, Extinction, defaultState } from "./main"
+import { GameState, Extinction, defaultState, updateGlobalMultipler } from "./main"
 import { tickMeteor } from "./meteor"
 import { dequeue } from "./buffqueue"
 import { tickDinosaur, trySpawnDinosaur, tickPoop } from "./dinosaur"
@@ -34,6 +34,7 @@ export function countUp(state: GameState) {
   if (tickMeteor()) {
     state.extinction = Extinction.ASTEROID;
   }
+  updateGlobalMultipler();
 }
 
 function tickBuffs(state: GameState) {

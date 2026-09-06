@@ -110,8 +110,12 @@ export function defaultState(): GameState {
   };
 }
 
+export function updateGlobalMultipler() {
+  state.globalMult = state.upgrades.flower.currFlowerMultiplier;
+}
+
 export function addPoints(points: Decimal) {
-  state.lifepoints.add(state.globalMult.mul(points));
+  state.lifepoints = state.lifepoints.add(state.globalMult.mul(points));
 }
 
 function loadState(): GameState {
@@ -146,6 +150,7 @@ function saveState(state: GameState) {
 const state = loadState();
 
 function update() {
+
   saveState(state);
   render(state, update);
 }
