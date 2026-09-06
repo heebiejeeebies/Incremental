@@ -1,10 +1,8 @@
-import { GameState, Extinction, defaultState, addPoints } from "./main"
+import { GameState, Extinction, defaultState } from "./main"
 import { tickMeteor } from "./meteor"
-import { randomLeaf } from "./purchases"
-import { peep, dequeue } from "./buffqueue"
+import { dequeue } from "./buffqueue"
 import { tickDinosaur, trySpawnDinosaur, tickPoop } from "./dinosaur"
 import { tickTrap } from "./venustrap"
-import Decimal from "break_eternity.js"
 import { leafpoints } from "./generators/leaf"
 
 // time moving
