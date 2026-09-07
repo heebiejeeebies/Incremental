@@ -1,205 +1,224 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Incremental</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: sans-serif;
-        text-align: center;
-      }
-      .world {
-        position: static;
-        background-color: #4a90e2;
-      }
-      .ground-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-      .deepground-image {
-        position: absolute;
-        left: 0;
-      }
-      .sun-image {
-        position: absolute;
-        transform: translate(-50%, -50%);
-      }
-      .controls {
-        position: absolute;
-        text-align: left;
-        z-index: 20;
-      }
-      .stats-panel {
-        position: absolute;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        text-align: left;
-        z-index: 20;
-      }
-      .stats-panel p {
-        margin: 0.25rem 0;
-      }
-      .depth-bar {
-        position: absolute;
-        z-index: 20;
-      }
-      .depth-bar-image {
-        display: block;
-      }
-      .depth-arrow {
-        position: absolute;
-        transform: translateY(-50%);
-        pointer-events: none;
-        white-space: nowrap;
-      }
-      .depth-arrow-current {
-        left: -200px;
-        width: 200px;
-      }
-      .depth-arrow-requirement {
-        left: 100%;
-        margin-left: 8px;
-        font-size: 0.85rem;
-        font-weight: bold;
-        color: #b22222;
-        background: rgba(255, 255, 255, 0.85);
-        padding: 0.1rem 0.4rem;
-        border-radius: 4px;
-      }
-      .tree-button {
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-      }
-      .tree-button img {
-        width: 1200px;
-        max-width: 85vw;
-        display: block;
-      }
-      .bevis-image {
-        position: absolute;
-        width: 200px;
-      }
-      .tree-container {
-        position: absolute;
-        transform: translate(-50%, -50%);
-      }
-      .roots-image {
-        position: absolute;
-        pointer-events: none;
-      }
-      .leaves-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-      }
-      .leaf-image {
-        position: absolute;
-        width: 40px;
-        pointer-events: none;
-      }
-      .fruit-image {
-        position: absolute;
-        width: 70px;
-        pointer-events: none;
-        transform: translate(-50%, -50%);
-      }
-      .dinosaur-button {
-        position: absolute;
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-      }
-      .dinosaur-button img {
-        width: 140px;
-        display: block;
-      }
-      .parked-dinosaur {
-        position: absolute;
-        transform: translate(-50%, -50%);
-      }
-      .venus-trap-image {
-        position: absolute;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-      }
-      .parked-dinosaur-button {
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-      }
-      .parked-dinosaur-button img {
-        width: 260px;
-        display: block;
-      }
-      .poop-image {
-        position: absolute;
-        width: 60px;
-        cursor: pointer;
-      }
-      .sell-dinosaur-button {
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        white-space: nowrap;
-        margin-top: 0.25rem;
-      }
-      .meteor-container {
-        position: absolute;
-        transition: top 3s linear, left 3s linear;
-        pointer-events: none;
-      }
-      .meteor-img {
-        position: absolute;
-        top: 0;
-        left: 30%;
-        width: 100%;
-        height: 100%;
-      }
-      .fire-img {
-        position: absolute;
-        top: 0;
-        left: 15%;
-        transform: rotate(-30deg);
-        width: 100%;
-        height: 100%;
-      }
-      .explosion-image {
-        position: absolute;
-        width: 900px;
-        max-width: 95vw;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        z-index: 100;
-      }
-      .game-over-text {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: red;
-        font-size: 6rem;
-        font-weight: bold;
-        white-space: nowrap;
-        pointer-events: none;
-        z-index: 40;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incremental</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      text-align: center;
+    }
+
+    .world {
+      position: static;
+      background-color: #166dcf;
+    }
+
+    .ground-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .sun-image {
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+
+    .controls {
+      position: absolute;
+      text-align: left;
+      z-index: 20;
+    }
+
+    .stats-panel {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      text-align: left;
+      z-index: 20;
+    }
+
+    .stats-panel p {
+      margin: 0.25rem 0;
+    }
+
+    .depth-bar {
+      position: absolute;
+      z-index: 20;
+    }
+
+    .depth-bar-image {
+      display: block;
+    }
+
+    .depth-arrow {
+      position: absolute;
+      transform: translateY(-50%);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .depth-arrow-current {
+      left: -200px;
+      width: 200px;
+    }
+
+    .depth-arrow-requirement {
+      left: 100%;
+      margin-left: 8px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #b22222;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .tree-button {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .tree-button img {
+      width: 1200px;
+      max-width: 85vw;
+      display: block;
+    }
+
+    .bevis-image {
+      position: absolute;
+      width: 200px;
+    }
+
+    .tree-container {
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+
+    .leaf-image {
+      position: absolute;
+      width: 40px;
+      pointer-events: none;
+    }
+
+    .fruit-image {
+      position: absolute;
+      width: 70px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .dinosaur-button {
+      position: absolute;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .dinosaur-button img {
+      width: 140px;
+      display: block;
+    }
+
+    .parked-dinosaur {
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+
+    .venus-trap-image {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .parked-dinosaur-button {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .parked-dinosaur-button img {
+      width: 260px;
+      display: block;
+    }
+
+    .poop-image {
+      position: absolute;
+      width: 60px;
+      cursor: pointer;
+    }
+
+    .sell-dinosaur-button {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      margin-top: 0.25rem;
+    }
+
+    .meteor-container {
+      position: absolute;
+      transition: top 3s linear, left 3s linear;
+      pointer-events: none;
+    }
+
+    .meteor-img {
+      position: absolute;
+      top: 0;
+      left: 30%;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fire-img {
+      position: absolute;
+      top: 0;
+      left: 15%;
+      transform: rotate(-30deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    .explosion-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 900px;
+      max-width: 95vw;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .game-over-text {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: red;
+      font-size: 6rem;
+      font-weight: bold;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 40;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

@@ -1,5 +1,5 @@
 import type { GameState, Poop, Leaf } from '../src/main.js';
-import {clickTree} from '../src/tree.js'
+import { clickTree } from '../src/tree.js'
 import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis, buyRoot } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM, ROOT_REQUIREMENT } from '../src/meteor.js'
 import ground_image from './assets/ground.png'
@@ -20,7 +20,7 @@ import antony_image from './assets/antony.png'
 import ethan_image from './assets/ethan.png'
 import izaac_image from './assets/izaac.png'
 import gigachad_image from './assets/gigachad.png'
-import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis, costRoot } from '../src/growth.js';
+import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis, costRoot } from '../src/cost.js';
 import { recruitActiveDinosaur, sellDinosaurAt, collectPoop, dinosaurphase } from '../src/dinosaur.js';
 import { buyTrap, startDevour, getVenusPhase, VenusPhase, TRAP_COST, TRAP_UNLOCK_FRUIT } from '../src/venustrap.js';
 import { TOTAL_DEPTH, getLevel } from '../src/roots.js';
@@ -262,7 +262,7 @@ function updatePoop(state: GameState, worldWidth: number, worldHeight: number, o
       el.style.left = `${left}px`;
       el.style.top = `${top}px`;
       el.style.transform = transform;
-      void el.offsetWidth; 
+      void el.offsetWidth;
       el.style.transition = 'top 1s linear, left 1s linear';
     }
 
@@ -366,7 +366,7 @@ function renderDepthBar(state: GameState): string {
 }
 
 export function render(state: GameState, onChange: () => void): void {
-  const leafCost = costLeaf(state.upgrades.leaf);
+  const leafCost = costLeaf(state.upgrades.purchasedLeaf);
   const fruitCost = costFruit(state.fruit.length);
   const photosynthesisCost = costPhotoSynthesis(state.upgrades.photosynthesis);
   const clickIncreaseCost = costClickIncrease(state.upgrades.clickIncrease);

@@ -3,7 +3,7 @@ import { addPoints, GameState } from "../main";
 import { peep } from "../buffqueue";
 
 export function leafpoints(state: GameState) {
-  const totalLeaves = state.upgrades.leaf;
+  const totalLeaves = state.upgrades.leaf; // purchased leaves vs no. of leaves
   const photosynthBase = new Decimal(1.05);
   let increase = totalLeaves.mul(photosynthBase.pow(state.upgrades.photosynthesis));
   const activeBuff = peep(state.buffsqueue);

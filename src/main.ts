@@ -60,6 +60,7 @@ export interface GameState {
 export interface Upgrades {
   clickIncrease: Decimal,
   leaf: Decimal,
+  purchasedLeaf: Decimal,
   photosynthesis: Decimal,
   aurafarm: Decimal,
   flower: Flower
@@ -89,6 +90,7 @@ export function defaultState(): GameState {
     upgrades: {
       clickIncrease: new Decimal(0),
       leaf: new Decimal(0),
+      purchasedLeaf: new Decimal(0),
       photosynthesis: new Decimal(0), // life point per leaf/s
       aurafarm: new Decimal(0),
       flower: {
@@ -136,6 +138,7 @@ function loadState(): GameState {
   merged.upgrades = {
     clickIncrease: new Decimal(merged.upgrades.clickIncrease),
     leaf: new Decimal(merged.upgrades.leaf),
+    purchasedLeaf: new Decimal(merged.upgrades.purchasedLeaf),
     photosynthesis: new Decimal(merged.upgrades.photosynthesis),
     aurafarm: new Decimal(merged.upgrades.aurafarm),
     flower: {
