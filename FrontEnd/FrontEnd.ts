@@ -71,7 +71,7 @@ function updateLeaves(state: GameState): void {
 }
 
 const EXPANDED_WORLD_HEIGHT = 2000;
-const WORLD_UNLOCK_LIFEPOINTS = 1000;
+const WORLD_UNLOCK_ROOT_DEPTH = 1;
 
 const GROUND_WIDTH = window.innerWidth;
 const GROUND_HEIGHT = window.innerHeight;
@@ -152,7 +152,7 @@ const dinosaurImg = dinosaurContainer.querySelector<HTMLImageElement>('img')!;
 let lastSeenActiveDinosaur: GameState['activeDinosaur'] = null;
 let lastSeenActiveDinosaurPhase: dinosaurphase | null = null;
 
-function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight: number): void {
+function updateActiveDinosaur(state: GameState, worldWidth: number): void {
   const dinosaur = state.activeDinosaur;
 
   if (!dinosaur) {
@@ -167,8 +167,10 @@ function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight:
   dinosaurContainer.style.opacity = dinosaur.phase === dinosaurphase.LEAVING ? '0.3' : '1';
   dinosaurContainer.style.transform = 'translate(-50%, -50%)';
 
+  // Y is a percentage of GROUND_HEIGHT (the tree's fixed elevation), not the
+  // expanded/scrollable world height, so dinosaurs always walk at ground level.
   const restLeft = (dinosaur.x / 100) * worldWidth;
-  const restTop = (dinosaur.y / 100) * worldHeight;
+  const restTop = (dinosaur.y / 100) * GROUND_HEIGHT;
 
   if (dinosaur !== lastSeenActiveDinosaur) {
     // brand new spawn: snap to the entry point, then walk in to the rest
@@ -176,7 +178,7 @@ function updateActiveDinosaur(state: GameState, worldWidth: number, worldHeight:
     lastSeenActiveDinosaur = dinosaur;
     lastSeenActiveDinosaurPhase = dinosaur.phase;
     const entryLeft = (dinosaur.entryX / 100) * worldWidth;
-    const entryTop = (dinosaur.entryY / 100) * worldHeight;
+    const entryTop = (dinosaur.entryY / 100) * GROUND_HEIGHT;
     dinosaurContainer.style.transition = 'none';
     dinosaurContainer.style.left = `${entryLeft}px`;
     dinosaurContainer.style.top = `${entryTop}px`;
@@ -213,8 +215,11 @@ function renderDinosaurRoster(state: GameState): string {
         selectedDinosaurIndex === index
           ? `<button class="sell-dinosaur-button" data-dino-index="${index}">${label}</button>`
           : '';
+      // Y is a percentage of GROUND_HEIGHT (the tree's fixed elevation), not the
+      // expanded/scrollable world height, so parked dinosaurs stay at ground level.
+      const top = (dinosaur.y / 100) * GROUND_HEIGHT;
       return `
-        <div class="parked-dinosaur" style="left: ${dinosaur.x}%; top: ${dinosaur.y}%;">
+        <div class="parked-dinosaur" style="left: ${dinosaur.x}%; top: ${top}px;">
           <button class="parked-dinosaur-button" data-dino-index="${index}">
             <img src="${DINOSAUR_IMAGES[dinosaur.name]}" alt="${dinosaur.name}" />
           </button>
@@ -229,7 +234,7 @@ const poopContainer = document.createElement('div');
 document.body.appendChild(poopContainer);
 const poopElements = new Map<Poop, HTMLImageElement>();
 
-function updatePoop(state: GameState, worldWidth: number, worldHeight: number, onChange: () => void): void {
+function updatePoop(state: GameState, worldWidth: number, onChange: () => void): void {
   const currentPoop = new Set(state.poop);
 
   for (const [poop, el] of poopElements) {
@@ -241,7 +246,9 @@ function updatePoop(state: GameState, worldWidth: number, worldHeight: number, o
 
   for (const poop of state.poop) {
     const left = (poop.x / 100) * worldWidth;
-    const top = (poop.y / 100) * worldHeight;
+    // Y is a percentage of GROUND_HEIGHT (the tree's fixed elevation), not the
+    // expanded/scrollable world height, so poop falls near the ground line.
+    const top = (poop.y / 100) * GROUND_HEIGHT;
     const transform = 'translate(-50%, -50%)';
 
     let el = poopElements.get(poop);
@@ -373,7 +380,7 @@ export function render(state: GameState, onChange: () => void): void {
   const aurafarmCost = costAurafarm(state.upgrades.aurafarm);
   const rootCost = costRoot(state.rootdepth);
 
-  const worldUnlocked = state.lifepoints.gte(WORLD_UNLOCK_LIFEPOINTS);
+  const worldUnlocked = state.rootdepth >= WORLD_UNLOCK_ROOT_DEPTH;
   const worldWidth = window.innerWidth;
   const worldHeight = worldUnlocked ? EXPANDED_WORLD_HEIGHT : window.innerHeight;
   document.body.style.overflowY = worldUnlocked ? 'auto' : 'hidden';
@@ -455,8 +462,8 @@ export function render(state: GameState, onChange: () => void): void {
 
   updateMeteor();
   updateExplosion();
-  updateActiveDinosaur(state, worldWidth, worldHeight);
-  updatePoop(state, worldWidth, worldHeight, onChange);
+  updateActiveDinosaur(state, worldWidth);
+  updatePoop(state, worldWidth, onChange);
   updateLeaves(state);
   attachDinosaurClickListenerOnce(state, onChange);
 
