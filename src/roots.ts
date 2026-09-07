@@ -20,7 +20,7 @@ export function getLevelMult(state: GameState) {
     return Level_Multipliers[getLevel(state)];
 }
 
-function getLevel(state: GameState): string {
+export function getLevel(state: GameState): string {
     if (state.rootdepth < LEVEL2_ELEVATION) {
         return "LEVEL1";
     } else if (state.rootdepth < LEVEL3_ELEVATION) {

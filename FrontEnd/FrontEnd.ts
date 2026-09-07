@@ -3,8 +3,13 @@ import {clickTree} from '../src/tree.js'
 import { buyLeaf, clearLeaves, buyFruit, buyAuraFarm, clearFruit, buyClickIncrease, buyPhotosynthesis, buyRoot } from '../src/purchases.js'
 import { getMeteorSize, getMeteorBurnedness, getMeteorPhase, MeteorPhase, SIZE_FOR_BOOM, ROOT_REQUIREMENT } from '../src/meteor.js'
 import ground_image from './assets/ground.png'
+import deepground_image from './assets/deepground.png'
 import sun_image from './assets/sun.png'
 import tree_image from './assets/treewow.png'
+import root1_image from './assets/root1-copy.png'
+import root2_image from './assets/root2-copy.png'
+import root3_image from './assets/root3-copy.png'
+import root4_image from './assets/root4-copy.png'
 import bevis from './assets/bevis.png'
 import leaf_image from './assets/leaf.png'
 import meteor_image from './assets/meatball.png'
@@ -18,7 +23,7 @@ import gigachad_image from './assets/gigachad.png'
 import { costAurafarm, costClickIncrease, costFruit, costLeaf, costPhotoSynthesis, costRoot } from '../src/growth.js';
 import { recruitActiveDinosaur, sellDinosaurAt, collectPoop, dinosaurphase } from '../src/dinosaur.js';
 import { buyTrap, startDevour, getVenusPhase, VenusPhase, TRAP_COST, TRAP_UNLOCK_FRUIT } from '../src/venustrap.js';
-import { TOTAL_DEPTH } from '../src/roots.js';
+import { TOTAL_DEPTH, getLevel } from '../src/roots.js';
 import trike_image from './assets/trike.png'
 import steg_image from './assets/steg.png'
 import bront_image from './assets/bront.png'
@@ -36,20 +41,10 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 
 const leavesContainer = document.createElement('div');
 leavesContainer.className = 'leaves-overlay';
-leavesContainer.style.position = 'absolute';
-leavesContainer.style.pointerEvents = 'none';
-document.body.appendChild(leavesContainer);
 const leafElements = new Map<Leaf, HTMLImageElement>();
 
 function updateLeaves(state: GameState): void {
-  const treeContainerEl = document.querySelector<HTMLDivElement>('.tree-container');
-  if (!treeContainerEl) return;
-
-  const rect = treeContainerEl.getBoundingClientRect();
-  leavesContainer.style.left = `${rect.left + window.scrollX}px`;
-  leavesContainer.style.top = `${rect.top + window.scrollY}px`;
-  leavesContainer.style.width = `${rect.width}px`;
-  leavesContainer.style.height = `${rect.height}px`;
+  document.getElementById('leaves-slot')?.replaceWith(leavesContainer);
 
   const currentLeaves = new Set(state.leaves);
 
@@ -92,6 +87,13 @@ const TREE_POSITION = {
   x: window.innerWidth / 2,
   y: window.innerHeight / 2 + 120,
 };
+
+const ROOTS_WIDTH = 1251;
+const ROOTS_POSITION = {
+  x: TREE_POSITION.x - 637,
+  y: TREE_POSITION.y + 225,
+};
+
 const METEOR_START_POSITION = { x: 400, y: 300 };
 const BEVIS_POSITION = { x: 500, y: 650 };
 
@@ -106,6 +108,14 @@ const DEPTH_BAR_HEIGHT = 260;
 const DEPTH_BAR_POSITION = { x: STATS_PANEL_POSITION.x + 280, y: STATS_PANEL_POSITION.y + 10 };
 
 let showStats = false;
+
+const ROOT_OVERLAY_IMAGES: Record<string, string | null> = {
+  LEVEL1: null,
+  LEVEL2: root1_image,
+  LEVEL3: root2_image,
+  LEVEL4: root3_image,
+  LEVEL5: root4_image,
+};
 
 const FRUIT_IMAGES: Record<string, string> = {
   ethanberry: ethan_image,
@@ -325,9 +335,16 @@ function renderVenusTrap(state: GameState): string {
   return `<img src="${src}" alt="Venus Trap" class="venus-trap-image" style="left: ${VENUS_TRAP_POSITION.x}px; top: ${VENUS_TRAP_POSITION.y}px; width: ${VENUS_TRAP_SIZE}px;" />`;
 }
 
-function renderExplosion(): string {
-  if (getMeteorPhase() !== MeteorPhase.EXPLODING) return '';
-  return `<img src="${explosion_image}" alt="Explosion" class="explosion-image" />`;
+const explosionImg = document.createElement('img');
+explosionImg.src = explosion_image;
+explosionImg.alt = 'Explosion';
+explosionImg.className = 'explosion-image';
+explosionImg.style.left = `${TREE_POSITION.x}px`;
+explosionImg.style.top = `${TREE_POSITION.y}px`;
+document.body.appendChild(explosionImg);
+
+function updateExplosion(): void {
+  explosionImg.style.display = getMeteorPhase() === MeteorPhase.EXPLODING ? '' : 'none';
 }
 
 function renderGameOver(): string {
@@ -367,17 +384,22 @@ export function render(state: GameState, onChange: () => void): void {
     window.scrollTo(0, 0);
   }
 
+  const deepgroundHeight = worldHeight - GROUND_HEIGHT;
+  const treeLevel = getLevel(state);
+
   app.innerHTML = `
     <div class="world" style="width: ${worldWidth}px; height: ${worldHeight}px;">
       <img src="${ground_image}" alt="Ground" class="ground-image" style="width: ${GROUND_WIDTH}px; height: ${GROUND_HEIGHT}px;" />
+      ${worldUnlocked ? `<img src="${deepground_image}" alt="Deep Ground" class="deepground-image" style="top: ${GROUND_HEIGHT}px; width: ${worldWidth}px; height: ${deepgroundHeight}px;" />` : ''}
       <img src="${sun_image}" alt="Sun" class="sun-image" style="left: ${SUN_POSITION.x}px; top: ${SUN_POSITION.y}px; width: ${SUN_SIZE}px; height: ${SUN_SIZE}px;" />
       <img src="${bevis}" alt="Bevis" class="bevis-image" style="left: ${BEVIS_POSITION.x}px; top: ${BEVIS_POSITION.y}px;" />
+      ${ROOT_OVERLAY_IMAGES[treeLevel] ? `<img src="${ROOT_OVERLAY_IMAGES[treeLevel]}" alt="Roots" class="roots-image" style="left: ${ROOTS_POSITION.x}px; top: ${ROOTS_POSITION.y}px; width: ${ROOTS_WIDTH}px;" />` : ''}
       <div class="tree-container" style="left: ${TREE_POSITION.x}px; top: ${TREE_POSITION.y}px;">
         <button id="tree" class="tree-button">
           <img src="${tree_image}" alt="Tree" />
         </button>
+        <div id="leaves-slot"></div>
         ${renderFruit(state)}
-        ${renderExplosion()}
       </div>
       ${renderDinosaurRoster(state)}
       ${renderVenusTrap(state)}
@@ -432,6 +454,7 @@ export function render(state: GameState, onChange: () => void): void {
   `;
 
   updateMeteor();
+  updateExplosion();
   updateActiveDinosaur(state, worldWidth, worldHeight);
   updatePoop(state, worldWidth, worldHeight, onChange);
   updateLeaves(state);

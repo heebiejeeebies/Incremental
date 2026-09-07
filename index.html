@@ -19,6 +19,10 @@
         top: 0;
         left: 0;
       }
+      .deepground-image {
+        position: absolute;
+        left: 0;
+      }
       .sun-image {
         position: absolute;
         transform: translate(-50%, -50%);
@@ -85,6 +89,18 @@
       .tree-container {
         position: absolute;
         transform: translate(-50%, -50%);
+      }
+      .roots-image {
+        position: absolute;
+        pointer-events: none;
+      }
+      .leaves-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
       }
       .leaf-image {
         position: absolute;
@@ -162,13 +178,11 @@
       }
       .explosion-image {
         position: absolute;
-        top: 50%;
-        left: 50%;
         width: 900px;
         max-width: 95vw;
         transform: translate(-50%, -50%);
         pointer-events: none;
-        z-index: 10;
+        z-index: 100;
       }
       .game-over-text {
         position: fixed;
