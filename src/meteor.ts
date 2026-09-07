@@ -12,7 +12,7 @@ const EXPLODE_DURATION_TICKS = 2;
 const GAME_OVER_DURATION_TICKS = 2;
 
 export const ROOT_REQUIREMENT = 4;
-const WILL_REQUIREMENT = 5;
+// const WILL_REQUIREMENT = 5;
 
 let size = 1;
 let burnedness = 0;
